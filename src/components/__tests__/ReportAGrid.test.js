@@ -1,0 +1,234 @@
+import '@testing-library/jest-dom';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import ReportAGrid from '../ReportAGrid';
+import ReportAGrids from '../ReportAGrids';
+
+const cellOf = el => el.closest('[role="gridcell"]');
+const rowOf = el => el.closest('[role="row"]');
+
+const makeReport = (totalColumns, results) => ({
+    title: { displayString: 'Report' },
+    headers: {
+        columnHeaders: ['Product', 'Amount'],
+        dataGridColumnSpecifications: [
+            { columnId: 'product', columnWidth: 200, columnType: 'text' },
+            { columnId: 'amount', columnWidth: 130, columnType: 'number', decimalPlaces: 2 }
+        ],
+        totalColumns
+    },
+    results: results ?? [
+        {
+            rowTitle: { displayString: 'row0' },
+            rowType: 'Normal',
+            values: [
+                { displayValue: 'Widget' },
+                {
+                    displayValue: 12.5,
+                    attributes: [
+                        { attributeType: 'text-colour', attributeValue: '#b71c1c' },
+                        { attributeType: 'background-colour', attributeValue: '#ffcdd2' }
+                    ]
+                }
+            ]
+        }
+    ],
+    totals: { values: [{ displayValue: '' }, { displayValue: 12.5 }] }
+});
+
+const row = (id, rowType, product, amount) => ({
+    rowTitle: { displayString: id },
+    rowType,
+    values: [{ displayValue: product }, { displayValue: amount }]
+});
+
+describe('ReportAGrid cells', () => {
+    test('formats numbers and bolds total columns, keeping cell colours', async () => {
+        render(<ReportAGrid report={makeReport([1])} />);
+
+        const totalCell = cellOf(await screen.findByText('12.50'));
+        expect(totalCell).toHaveClass('totalColumn');
+        expect(totalCell).toHaveStyle({ color: '#b71c1c', backgroundColor: '#ffcdd2' });
+        expect(cellOf(screen.getByText('Widget'))).not.toHaveClass('totalColumn');
+    });
+
+    test('blanks zeroes unless renderZeroes', async () => {
+        const results = [row('r', 'Normal', 'Nil', 0)];
+        const { unmount } = render(<ReportAGrid report={makeReport([], results)} />);
+        await screen.findByText('Nil');
+        expect(screen.queryByText('0.00')).not.toBeInTheDocument();
+        unmount();
+
+        render(<ReportAGrid report={makeReport([], results)} renderZeroes />);
+        expect(await screen.findByText('0.00')).toBeInTheDocument();
+    });
+
+    test('bolds Subtotal and Total row types', async () => {
+        const results = [row('a', 'Normal', 'A', 1), row('s', 'Subtotal', 'Sub', 1)];
+        render(<ReportAGrid report={makeReport([], results)} />);
+
+        expect(rowOf(await screen.findByText('Sub'))).toHaveClass('totalLine');
+        expect(rowOf(screen.getByText('A'))).not.toHaveClass('totalLine');
+    });
+});
+
+describe('ReportAGrid totals', () => {
+    test('pins the totals row to the bottom, bold', async () => {
+        render(<ReportAGrid report={makeReport([1])} showTotals />);
+
+        await waitFor(() => expect(screen.getAllByText('12.50')).toHaveLength(2));
+        const totalsRow = rowOf(screen.getAllByText('12.50')[1]);
+        expect(totalsRow).toHaveClass('totalLine');
+        expect(totalsRow.closest('.ag-grid-pinned-bottom-rows-container')).not.toBeNull();
+    });
+
+    test('no totals row without showTotals', async () => {
+        render(<ReportAGrid report={makeReport([1])} />);
+
+        expect(await screen.findAllByText('12.50')).toHaveLength(1);
+    });
+});
+
+const makeDateReport = () => ({
+    title: { displayString: 'Report' },
+    headers: {
+        columnHeaders: ['Date'],
+        dataGridColumnSpecifications: [{ columnId: 'date', columnWidth: 200, columnType: 'date' }]
+    },
+    results: [
+        ['a', '02-Nov-2026', '2026-11-02T00:00:00.0000000'],
+        ['b', '10-Jan-2026', '2026-01-10T00:00:00.0000000'],
+        ['c', '25-Mar-2025', '2025-03-25T00:00:00.0000000']
+    ].map(([id, text, sortValue]) => ({
+        rowTitle: { displayString: id },
+        rowType: 'Normal',
+        values: [{ textDisplayValue: text, sortValue }]
+    })),
+    totals: { values: [{ displayValue: '' }] }
+});
+
+const dateColumnOrder = () =>
+    Array.from(document.querySelectorAll('.ag-grid-scrolling-container [col-id="date"]')).map(
+        c => c.textContent
+    );
+
+describe('ReportAGrid date columns', () => {
+    test('shows the backend formatted string and sorts chronologically', async () => {
+        render(<ReportAGrid report={makeDateReport()} />);
+        await screen.findByText('02-Nov-2026');
+
+        const header = screen.getByText('Date');
+        await userEvent.click(header);
+        await waitFor(() =>
+            expect(dateColumnOrder()).toEqual(['25-Mar-2025', '10-Jan-2026', '02-Nov-2026'])
+        );
+
+        await userEvent.click(header);
+        await waitFor(() =>
+            expect(dateColumnOrder()).toEqual(['02-Nov-2026', '10-Jan-2026', '25-Mar-2025'])
+        );
+    });
+});
+
+const linkReport = (href, externalLink) => ({
+    title: { displayString: 'Report' },
+    headers: {
+        columnHeaders: ['Product'],
+        dataGridColumnSpecifications: [
+            { columnId: 'product', columnWidth: 200, columnType: 'text' }
+        ]
+    },
+    results: [
+        {
+            rowTitle: { displayString: 'row0' },
+            rowType: 'Normal',
+            values: [
+                {
+                    textDisplayValue: 'Widget',
+                    drillDowns: [{ href, externalLink }],
+                    attributes: [{ attributeType: 'text-colour', attributeValue: '#1565c0' }]
+                }
+            ]
+        }
+    ]
+});
+
+describe('ReportAGrid drill-downs', () => {
+    test('a link within the app uses the router and the cell text colour', async () => {
+        render(
+            <MemoryRouter>
+                <ReportAGrid report={linkReport('/products/widget', false)} />
+            </MemoryRouter>
+        );
+
+        const link = await screen.findByRole('link', { name: 'Widget' });
+        expect(link).toHaveAttribute('href', '/products/widget');
+        expect(link).toHaveAttribute('target', '_blank');
+        expect(link).toHaveStyle({ color: '#1565c0' });
+    });
+
+    test('a link to another app, in the same tab when asked', async () => {
+        render(
+            <ReportAGrid
+                report={linkReport('https://app.linn.co.uk/widget', true)}
+                openLinksInNewTabs={false}
+            />
+        );
+
+        const link = await screen.findByRole('link', { name: 'Widget' });
+        expect(link).toHaveAttribute('href', 'https://app.linn.co.uk/widget');
+        expect(link).not.toHaveAttribute('target', '_blank');
+    });
+});
+
+describe('ReportAGrid with many rows', () => {
+    const manyRows = n =>
+        Array.from({ length: n }, (_, i) => row(`r${i}`, 'Normal', `Product ${i}`, i));
+
+    test('is one list, with no paging, and gives the row count', async () => {
+        render(<ReportAGrid report={makeReport([], manyRows(250))} showRowCount height="400px" />);
+
+        await screen.findByText('Product 0');
+        expect(screen.getByText('Number of rows: 250')).toBeInTheDocument();
+        expect(document.querySelector('.ag-paging-panel')).toBeNull();
+    });
+
+    test('the search box filters rows', async () => {
+        // jsdom has no layout, so the grid only draws its first ten or so rows
+        render(<ReportAGrid report={makeReport([], manyRows(8))} showExport />);
+        await screen.findByText('Product 3');
+
+        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 3');
+
+        await waitFor(() => expect(screen.queryByText('Product 2')).not.toBeInTheDocument());
+        expect(screen.getByText('Product 3')).toBeInTheDocument();
+    });
+});
+
+describe('ReportAGrids', () => {
+    const second = () => ({ ...makeReport([]), title: { displayString: 'Second' } });
+
+    test('draws a grid for each report, each with headers', async () => {
+        const { container } = render(<ReportAGrids reportData={[makeReport([]), second()]} />);
+
+        await waitFor(() => expect(screen.getAllByText('Widget')).toHaveLength(2));
+        expect(container.querySelectorAll('.ag-root-wrapper')).toHaveLength(2);
+        expect(within(container).getByText('Second')).toBeInTheDocument();
+        container
+            .querySelectorAll('.ag-header')
+            .forEach(header => expect(header).not.toHaveStyle({ height: '0px' }));
+    });
+
+    test('without repeatHeaders, only the first report has headers', async () => {
+        const { container } = render(
+            <ReportAGrids reportData={[makeReport([]), second()]} repeatHeaders={false} />
+        );
+
+        await waitFor(() => expect(screen.getAllByText('Widget')).toHaveLength(2));
+        const headers = container.querySelectorAll('.ag-header');
+        expect(headers[0]).not.toHaveStyle({ height: '0px' });
+        expect(headers[0]).toBeVisible();
+        expect(headers[1]).not.toBeVisible();
+    });
+});
