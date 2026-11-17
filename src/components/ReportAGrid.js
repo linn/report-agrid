@@ -108,7 +108,10 @@ function ReportAGrid({
                 wrapperBorderRadius: muiTheme.shape.borderRadius,
                 // compact, like ReportDataGrid's density="compact"
                 spacing: 4,
-                rowHeight: fixedRowHeight ? 30 : undefined
+                rowHeight: fixedRowHeight ? 30 : undefined,
+                // AG Grid keeps a short grid's rows area at least 150px tall, which left a gap above
+                // the pinned totals row; one row's height still has room for "No Rows To Show".
+                autoHeightMinBodyHeight: 30
             }),
         [muiTheme, fixedRowHeight]
     );
@@ -280,7 +283,7 @@ function ReportAGrid({
                         onChange={e => setQuickFilterText(e.target.value)}
                         slotProps={{ htmlInput: { 'aria-label': 'Search' } }}
                     />
-                    <Button size="small" onClick={exportCsv}>
+                    <Button size="small" sx={{ textTransform: 'none' }} onClick={exportCsv}>
                         Export CSV
                     </Button>
                 </Grid>
