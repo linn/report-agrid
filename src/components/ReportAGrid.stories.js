@@ -61,6 +61,36 @@ export const WithSubtotalRows = {
 
 export const WithRowCount = { name: 'With row count', args: { showRowCount: true } };
 
+export const WithSearchAndExport = {
+    name: 'With search and export',
+    args: { showExport: true }
+};
+
+export const LongTitleWithSearchAndExport = {
+    name: 'Long title with search and export (they move below it, at the right)',
+    args: {
+        report: makeReport(
+            'Products sold by every sales outlet in every territory, by month, for the whole of the last financial year, excluding returns',
+            basicRows
+        ),
+        showExport: true
+    }
+};
+
+export const WithLinkedTitle = {
+    name: 'With a linked title (black, not link blue)',
+    args: {
+        report: {
+            ...makeReport('Products Report (title links somewhere)', basicRows),
+            title: {
+                displayString: 'Products Report (title links somewhere)',
+                drillDowns: [{ href: 'https://www.linn.co.uk' }]
+            }
+        },
+        showExport: true
+    }
+};
+
 export const WithDrillDowns = {
     name: 'With drill-down links',
     args: { report: reportWithDrillDowns }
