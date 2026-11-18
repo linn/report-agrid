@@ -1,4 +1,9 @@
 # Changelog
+## [0.1.2] - 2026-11-18
+- A title that links somewhere is drawn in the title's own colour, not link blue, with a grey underline. On hover the underline darkens and an icon appears after the title (open-in-new when links open in new tabs, otherwise a link). This differs from ReportDataGrid.
+- A progress bar shows while the grid draws its first rows, instead of the title above an empty grid.
+- A column's filter icon shows only while you point at its header, or when it has a filter set, so the headers are quieter. Touch screens still show them all.
+- Search and Export CSV are smaller and greyer, on the title's line at the right, and the title sits directly above the grid.
 ## [0.1.1] - 2026-11-17
 - Fix the gap above the totals row on a short report: AG Grid kept the rows area at least 150px tall, whatever the rows. It's now at least one row tall, which still has room for "No Rows To Show".
 - The Export CSV button is no longer in capitals.

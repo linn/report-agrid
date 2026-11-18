@@ -269,3 +269,33 @@ describe('ReportAGrids', () => {
         expect(headers[1]).not.toBeVisible();
     });
 });
+
+describe('ReportAGrid title and loading', () => {
+    test('a linked title keeps the text colour rather than link blue, underlined', async () => {
+        const report = {
+            ...makeReport([]),
+            title: { displayString: 'Linked', drillDowns: [{ href: '/somewhere' }] }
+        };
+        render(<ReportAGrid report={report} />);
+
+        const link = screen.getByRole('link', { name: 'Linked' });
+        expect(link).toHaveAttribute('href', '/somewhere');
+        expect(link).toHaveStyle({ color: 'inherit' });
+        expect(getComputedStyle(link).textDecoration).toContain('underline');
+        await screen.findByText('Widget');
+    });
+
+    test('shows a progress bar until the rows are drawn', async () => {
+        render(<ReportAGrid report={makeReport([])} />);
+
+        expect(screen.getByRole('progressbar')).toBeInTheDocument();
+        await screen.findByText('Widget');
+        await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument());
+    });
+
+    test('a report with no rows stops loading too', async () => {
+        render(<ReportAGrid report={makeReport([], [])} />);
+
+        await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument());
+    });
+});

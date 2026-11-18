@@ -16,11 +16,12 @@ import {
     TooltipModule,
     themeQuartz
 } from 'ag-grid-community';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
+import InputBase from '@mui/material/InputBase';
+import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
 // Registered per grid (the `modules` prop) rather than globally, so this component doesn't
@@ -40,6 +41,26 @@ const modules = [
     TextFilterModule,
     TooltipModule
 ];
+
+// Material's open_in_new and link icons, inline: @mui/icons-material isn't a dependency
+const iconProps = {
+    className: 'titleLinkIcon',
+    width: '1em',
+    height: '1em',
+    viewBox: '0 0 24 24',
+    fill: 'currentColor',
+    'aria-hidden': true
+};
+const OpenInNewIcon = () => (
+    <svg {...iconProps}>
+        <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z" />
+    </svg>
+);
+const LinkIcon = () => (
+    <svg {...iconProps}>
+        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5" />
+    </svg>
+);
 
 const isZero = v => v === 0 || v === '0';
 
@@ -259,45 +280,116 @@ function ReportAGrid({
     // rows shrinks to fit them (and grows back when the search is cleared).
     const [rowsShowing, setRowsShowing] = useState(null);
     const autoHeight = (rowsShowing ?? rowData.length) <= maxRowsWithoutScroll;
-    const onModelUpdated = useCallback(e => setRowsShowing(e.api.getDisplayedRowCount()), []);
 
-    const title = <Typography variant={titleVariant}>{report.title.displayString}</Typography>;
+    // AG Grid takes a moment to draw its first rows (longer with many wrapped rows to measure), so
+    // until it has, the grid is hidden behind a progress bar rather than showing empty. A report
+    // with no rows never draws one, so it counts as ready once its (empty) model settles.
+    const [ready, setReady] = useState(false);
+    const onFirstDataRendered = useCallback(() => setReady(true), []);
+    const onModelUpdated = useCallback(e => {
+        const count = e.api.getDisplayedRowCount();
+        setRowsShowing(count);
+        if (count === 0) {
+            setReady(true);
+        }
+    }, []);
+
+    const title = (
+        <Typography variant={titleVariant} component="span">
+            {report.title.displayString}
+        </Typography>
+    );
     const titleDrillDown = report.title?.drillDowns?.[0]?.href;
 
+    // quiet, so they don't compete with the report: no box, small, in the secondary text colour
+    const toolStyle = { fontSize: muiTheme.typography.body2.fontSize, color: 'text.secondary' };
+
     return (
-        <Grid container spacing={3}>
-            <Grid size={12} sx={{ marginBottom: '-10px' }}>
-                {titleDrillDown ? (
-                    <a
-                        target={openLinksInNewTabs ? '_blank' : ''}
-                        rel={openLinksInNewTabs ? 'noopener noreferrer' : ''}
-                        href={titleDrillDown}
-                    >
-                        {title}
-                    </a>
-                ) : (
-                    title
-                )}
-            </Grid>
-            {showExport && (
-                <Grid size={12} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <TextField
-                        size="small"
-                        variant="standard"
-                        placeholder="Search…"
-                        value={quickFilterText}
-                        onChange={e => setQuickFilterText(e.target.value)}
-                        slotProps={{ htmlInput: { 'aria-label': 'Search' } }}
-                    />
-                    <Button size="small" sx={{ textTransform: 'none' }} onClick={exportCsv}>
-                        Export CSV
-                    </Button>
-                </Grid>
-            )}
-            <Grid
-                size={12}
+        <Box sx={{ mb: 3 }}>
+            <Box
                 sx={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    flexWrap: 'wrap',
+                    columnGap: 2,
+                    mb: 0.5
+                }}
+            >
+                <Box sx={{ flexGrow: 1 }}>
+                    {titleDrillDown ? (
+                        <Box
+                            component="a"
+                            target={openLinksInNewTabs ? '_blank' : ''}
+                            rel={openLinksInNewTabs ? 'noopener noreferrer' : ''}
+                            href={titleDrillDown}
+                            // the title's own colour rather than link blue, with a grey underline
+                            // so it reads as a link; on hover the underline darkens and a link
+                            // icon appears after it
+                            sx={{
+                                color: 'inherit',
+                                textDecoration: 'underline',
+                                textDecorationColor: alpha(muiTheme.palette.text.primary, 0.35),
+                                textDecorationThickness: '1px',
+                                textUnderlineOffset: '3px',
+                                '& .titleLinkIcon': {
+                                    ml: 0.75,
+                                    verticalAlign: 'middle',
+                                    color: 'text.secondary',
+                                    opacity: 0,
+                                    transition: 'opacity .2s'
+                                },
+                                '&:hover, &:focus-visible': {
+                                    textDecorationColor: 'currentColor',
+                                    '& .titleLinkIcon': { opacity: 1 }
+                                }
+                            }}
+                        >
+                            {title}
+                            {openLinksInNewTabs ? <OpenInNewIcon /> : <LinkIcon />}
+                        </Box>
+                    ) : (
+                        title
+                    )}
+                </Box>
+                {showExport && (
+                    // a title too long to share its line pushes these onto the next, still at the right
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+                        <InputBase
+                            placeholder="Search…"
+                            value={quickFilterText}
+                            onChange={e => setQuickFilterText(e.target.value)}
+                            inputProps={{ 'aria-label': 'Search' }}
+                            sx={{
+                                ...toolStyle,
+                                width: 160,
+                                borderBottom: 1,
+                                borderColor: 'divider',
+                                '&.Mui-focused': { borderColor: 'primary.main' }
+                            }}
+                        />
+                        <Button
+                            size="small"
+                            onClick={exportCsv}
+                            sx={{ ...toolStyle, textTransform: 'none', minWidth: 0 }}
+                        >
+                            Export CSV
+                        </Button>
+                    </Box>
+                )}
+            </Box>
+            <Box
+                sx={{
+                    position: 'relative',
                     ...(autoHeight ? {} : { height }),
+                    '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
+                    // Filter icons only on the header you're pointing at, or one with a filter
+                    // set. (AG Grid's suppressMenuHide doesn't cover Community's filter button.)
+                    // Devices that can't hover keep them showing.
+                    '@media (hover: hover)': {
+                        '& .ag-header-cell-filter-button': { transition: 'opacity .2s' },
+                        '& .ag-header-cell:not(.ag-header-cell-filtered):not(:hover):not(:focus-within) .ag-header-cell-filter-button':
+                            { opacity: 0 }
+                    },
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } }),
                     '& .totalLine': { fontWeight: 'bolder' },
@@ -314,6 +406,12 @@ function ReportAGrid({
                     '& .ag-cell-wrap-text': { lineHeight: 1.5, py: '4px', wordBreak: 'break-word' }
                 }}
             >
+                {!ready && (
+                    <LinearProgress
+                        aria-label="Loading"
+                        sx={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+                    />
+                )}
                 <AgGridReact
                     ref={gridRef}
                     modules={modules}
@@ -328,20 +426,19 @@ function ReportAGrid({
                     quickFilterText={quickFilterText}
                     domLayout={autoHeight ? 'autoHeight' : 'normal'}
                     onModelUpdated={onModelUpdated}
+                    onFirstDataRendered={onFirstDataRendered}
                     suppressColumnVirtualisation
                     enableCellTextSelection
                     ensureDomOrder
                     tooltipShowDelay={300}
                 />
-            </Grid>
+            </Box>
             {showRowCount && report?.results && (
-                <Grid size={12} sx={{ mt: -1.25 }}>
-                    <Typography variant="body2" sx={{ float: 'left', pl: 2 }}>
-                        Number of rows: {report.results.length}
-                    </Typography>
-                </Grid>
+                <Typography variant="body2" sx={{ pl: 2, mt: 0.5 }}>
+                    Number of rows: {report.results.length}
+                </Typography>
             )}
-        </Grid>
+        </Box>
     );
 }
 
