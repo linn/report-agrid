@@ -13,6 +13,7 @@ function ReportAGrids({
     showTotals = false,
     fixedRowHeight = false,
     showRowCount = false,
+    maxRowsWithoutScroll = 100,
     height = '100vh'
 }) {
     const gridRefs = useMemo(() => reportData.map(() => createRef()), [reportData]);
@@ -36,6 +37,7 @@ function ReportAGrids({
                     showHeader={repeatHeaders || i === 0}
                     openLinksInNewTabs={openLinksInNewTabs}
                     showRowCount={showRowCount}
+                    maxRowsWithoutScroll={maxRowsWithoutScroll}
                     height={height}
                     gridRef={gridRefs[i]}
                     alignedGrids={alignedGridsFor(i)}

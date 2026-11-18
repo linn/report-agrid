@@ -34,6 +34,7 @@ export default {
         openLinksInNewTabs: true,
         fixedRowHeight: false,
         showRowCount: false,
+        maxRowsWithoutScroll: 100,
         height: '100vh'
     }
 };
@@ -82,13 +83,23 @@ export const FixedRowHeight = { name: 'Fixed row height', args: { fixedRowHeight
 export const RenderZeroes = { name: 'Render zeroes', args: { renderZeroes: true } };
 
 export const LargeReport = {
-    name: 'Large report (5,000 rows, one scrolling list)',
+    name: 'Large report (5,000 rows, one scrolling list; search it down to fewer than 100 and it shrinks)',
     args: {
         report: makeLargeReport(5000),
         showExport: true,
         showRowCount: true,
         fixedRowHeight: true,
         height: '70vh'
+    }
+};
+
+export const GrowsToFit200Rows = {
+    name: '200 rows, no scrollbar of its own (maxRowsWithoutScroll 250)',
+    args: {
+        report: makeLargeReport(200),
+        maxRowsWithoutScroll: 250,
+        fixedRowHeight: true,
+        showRowCount: true
     }
 };
 

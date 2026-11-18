@@ -206,6 +206,43 @@ describe('ReportAGrid with many rows', () => {
     });
 });
 
+describe('ReportAGrid height', () => {
+    const manyRows = n =>
+        Array.from({ length: n }, (_, i) => row(`r${i}`, 'Normal', `Product ${i}`, i));
+    const layout = () =>
+        document.querySelector('.ag-root-wrapper').classList.contains('ag-layout-auto-height')
+            ? 'grows to fit'
+            : 'scrolls';
+
+    test.each([
+        [100, undefined, 'grows to fit'],
+        [101, undefined, 'scrolls'],
+        [200, 250, 'grows to fit'],
+        [200, Infinity, 'grows to fit'],
+        [5, 2, 'scrolls']
+    ])('%p rows with maxRowsWithoutScroll %p: %s', async (rowCount, max, expected) => {
+        render(
+            <ReportAGrid report={makeReport([], manyRows(rowCount))} maxRowsWithoutScroll={max} />
+        );
+        await screen.findByText('Product 0');
+
+        await waitFor(() => expect(layout()).toBe(expected));
+    });
+
+    test('goes by the rows showing: a big report searched down to a few grows to fit them', async () => {
+        render(<ReportAGrid report={makeReport([], manyRows(500))} showExport />);
+        await screen.findByText('Product 0');
+        await waitFor(() => expect(layout()).toBe('scrolls'));
+
+        // Product 49 and Product 490 to 499
+        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 49');
+        await waitFor(() => expect(layout()).toBe('grows to fit'));
+
+        await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
+        await waitFor(() => expect(layout()).toBe('scrolls'));
+    });
+});
+
 describe('ReportAGrids', () => {
     const second = () => ({ ...makeReport([]), title: { displayString: 'Second' } });
 

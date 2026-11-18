@@ -9,6 +9,7 @@ import {
     NumberFilterModule,
     PinnedRowModule,
     QuickFilterModule,
+    RowApiModule,
     RowAutoHeightModule,
     RowStyleModule,
     TextFilterModule,
@@ -33,15 +34,12 @@ const modules = [
     NumberFilterModule,
     PinnedRowModule,
     QuickFilterModule,
+    RowApiModule,
     RowAutoHeightModule,
     RowStyleModule,
     TextFilterModule,
     TooltipModule
 ];
-
-// Below this many rows the grid grows to fit them all (no scrollbar of its own, as
-// ReportDataGrid). From here on it gets a fixed height and scrolls, drawing only the rows in view.
-const autoHeightRowLimit = 100;
 
 const isZero = v => v === 0 || v === '0';
 
@@ -84,6 +82,10 @@ function ReportAGrid({
     openLinksInNewTabs = true,
     fixedRowHeight = false,
     showRowCount = false,
+    // Up to this many rows showing (after search and filters), the grid grows to fit them, with no
+    // scrollbar of its own: the page scrolls. More, and it is `height` tall and scrolls itself,
+    // drawing only the rows in view, which keeps thousands of rows fast. Infinity: always grow.
+    maxRowsWithoutScroll = 100,
     height = '100vh',
     // a ref given the AgGridReact, for its api (ReportAGrids uses it to align its grids)
     gridRef: outerGridRef,
@@ -108,7 +110,10 @@ function ReportAGrid({
                 wrapperBorderRadius: muiTheme.shape.borderRadius,
                 // compact, like ReportDataGrid's density="compact"
                 spacing: 4,
-                rowHeight: fixedRowHeight ? 30 : undefined
+                rowHeight: fixedRowHeight ? 30 : undefined,
+                // AG Grid keeps a short grid's rows area at least 150px tall, which left a gap above
+                // the pinned totals row; one row's height still has room for "No Rows To Show".
+                autoHeightMinBodyHeight: 30
             }),
         [muiTheme, fixedRowHeight]
     );
@@ -250,7 +255,11 @@ function ReportAGrid({
             fileName: `${report.title?.displayString || 'report'}.csv`
         });
 
-    const autoHeight = rowData.length < autoHeightRowLimit;
+    // Decided by the rows showing, not the report's total, so a big report searched down to a few
+    // rows shrinks to fit them (and grows back when the search is cleared).
+    const [rowsShowing, setRowsShowing] = useState(null);
+    const autoHeight = (rowsShowing ?? rowData.length) <= maxRowsWithoutScroll;
+    const onModelUpdated = useCallback(e => setRowsShowing(e.api.getDisplayedRowCount()), []);
 
     const title = <Typography variant={titleVariant}>{report.title.displayString}</Typography>;
     const titleDrillDown = report.title?.drillDowns?.[0]?.href;
@@ -280,7 +289,7 @@ function ReportAGrid({
                         onChange={e => setQuickFilterText(e.target.value)}
                         slotProps={{ htmlInput: { 'aria-label': 'Search' } }}
                     />
-                    <Button size="small" onClick={exportCsv}>
+                    <Button size="small" sx={{ textTransform: 'none' }} onClick={exportCsv}>
                         Export CSV
                     </Button>
                 </Grid>
@@ -318,6 +327,7 @@ function ReportAGrid({
                     context={{ openLinksInNewTabs }}
                     quickFilterText={quickFilterText}
                     domLayout={autoHeight ? 'autoHeight' : 'normal'}
+                    onModelUpdated={onModelUpdated}
                     suppressColumnVirtualisation
                     enableCellTextSelection
                     ensureDomOrder

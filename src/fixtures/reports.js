@@ -214,6 +214,7 @@ const reportWithDates = {
 };
 
 const products = ['Widget', 'Gadget', 'Sprocket', 'Flange', 'Grommet', 'Doohickey'];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const makeLargeReport = rowCount => ({
     title: { displayString: `Large report (${rowCount.toLocaleString('en-GB')} rows)` },
     headers: {
@@ -249,7 +250,8 @@ const makeLargeReport = rowCount => ({
         const qty = (i * 7) % 50;
         const unitPrice = ((i * 13) % 200) + 0.99;
         const date = new Date(Date.UTC(2026, 0, 1) + ((i * 37) % 365) * 86400000);
-        const month = date.toLocaleString('en-GB', { month: 'short', timeZone: 'UTC' });
+        // dd-MMM-yyyy, the house format (en-GB's short month gives "Sept")
+        const month = months[date.getUTCMonth()];
         return {
             rowTitle: { displayString: `row${i}` },
             rowType: 'Normal',
