@@ -28,8 +28,12 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
 
 ### Differences from ReportDataGrid
 
-- No paging: every row in one list. Under 100 rows the grid grows to fit them; from 100 rows it is
-  `height` tall (default `100vh`) and scrolls, drawing only the rows in view.
+- No paging: every row in one list. Up to `maxRowsWithoutScroll` rows showing (default 100) the grid
+  grows to fit them, with no scrollbar of its own, and the page scrolls. With more it is `height` tall
+  (default `100vh`) and scrolls itself, drawing only the rows in view, which keeps thousands of rows
+  fast. It goes by the rows showing after search and filters, so a big report searched down to a few
+  rows shrinks to fit them. `maxRowsWithoutScroll={Infinity}` always grows to fit (every row is
+  drawn, so keep it for reports of hundreds of rows, not thousands).
 - The totals row is pinned to the bottom: always in view, and not moved by sorting.
 - `showExport` gives a search box and an Export CSV button (no print or column chooser; AG Grid's Excel
   export is in its paid edition).
@@ -38,7 +42,7 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   resizing a column or scrolling sideways moves them all.
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
-Extra props on `ReportAGrid`: `height`, and `gridRef` and `alignedGrids` (AG Grid's own, used by
+Extra props on `ReportAGrid`: `maxRowsWithoutScroll`, `height`, and `gridRef` and `alignedGrids` (AG Grid's own, used by
 `ReportAGrids`).
 
 ## Development
