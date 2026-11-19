@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import {
     AlignedGridsModule,
@@ -10,6 +10,7 @@ import {
     PaginationModule,
     PinnedRowModule,
     QuickFilterModule,
+    RenderApiModule,
     RowApiModule,
     RowAutoHeightModule,
     RowStyleModule,
@@ -18,9 +19,10 @@ import {
     themeQuartz
 } from 'ag-grid-community';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import LinearProgress from '@mui/material/LinearProgress';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
@@ -37,6 +39,7 @@ const modules = [
     PaginationModule,
     PinnedRowModule,
     QuickFilterModule,
+    RenderApiModule,
     RowApiModule,
     RowAutoHeightModule,
     RowStyleModule,
@@ -44,24 +47,31 @@ const modules = [
     TooltipModule
 ];
 
-// Material's open_in_new and link icons, inline: @mui/icons-material isn't a dependency
-const iconProps = {
-    className: 'titleLinkIcon',
-    width: '1em',
-    height: '1em',
-    viewBox: '0 0 24 24',
-    fill: 'currentColor',
-    'aria-hidden': true
-};
-const OpenInNewIcon = () => (
-    <svg {...iconProps}>
-        <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z" />
-    </svg>
+// Material's icons, inline: @mui/icons-material isn't a dependency
+const icon = d =>
+    function Icon({ className }) {
+        return (
+            <svg
+                className={className}
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden
+            >
+                <path d={d} />
+            </svg>
+        );
+    };
+const OpenInNewIcon = icon(
+    'M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z'
 );
-const LinkIcon = () => (
-    <svg {...iconProps}>
-        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5" />
-    </svg>
+const LinkIcon = icon(
+    'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5'
+);
+const DownloadIcon = icon('M19 9h-4V3H9v6H5l7 7zM5 18v2h14v-2z');
+const PrintIcon = icon(
+    'M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3m-3 11H8v-5h8zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1m-1-9H6v4h12z'
 );
 
 const defaultPageSizeOptions = [25, 50, 100, 250, 500];
@@ -103,6 +113,8 @@ function ReportAGrid({
     titleVariant = 'h6',
     showHeader = true,
     showExport = false,
+    // a Print button, which prints every row (not just those in view, or the page when paging)
+    showPrint = false,
     showTotals = false,
     openLinksInNewTabs = true,
     fixedRowHeight = false,
@@ -116,6 +128,8 @@ function ReportAGrid({
     // with a selector of pageSizeOptions (pageSize is added to them if it isn't one).
     pageSize,
     pageSizeOptions = defaultPageSizeOptions,
+    // this many of the report's first columns stay in view when scrolling sideways
+    pinnedColumns = 0,
     // a ref given the AgGridReact, for its api (ReportAGrids uses it to align its grids)
     gridRef: outerGridRef,
     // AG Grid's alignedGrids: other grids whose column widths and scroll this one keeps in step with
@@ -158,6 +172,9 @@ function ReportAGrid({
                 return {
                     field,
                     headerName: report.headers.columnHeaders[i],
+                    // shown only when the header is cut off (tooltipShowMode)
+                    headerTooltip: report.headers.columnHeaders[i],
+                    pinned: i < pinnedColumns ? 'left' : undefined,
                     width: spec.columnWidth,
                     headerClass: alignClass,
                     cellClass: [
@@ -211,7 +228,7 @@ function ReportAGrid({
                     })
                 };
             }),
-        [report, fixedRowHeight]
+        [report, fixedRowHeight, pinnedColumns]
     );
 
     const rowData = useMemo(
@@ -308,6 +325,21 @@ function ReportAGrid({
         : (rowsShowing ?? rowData.length);
     const autoHeight = rowsInView <= maxRowsWithoutScroll;
 
+    // Print draws every row (AG Grid's print layout, unpaged), opens the browser's print dialog,
+    // then puts the grid back.
+    const [printing, setPrinting] = useState(false);
+    useEffect(() => {
+        if (!printing) {
+            return undefined;
+        }
+        const timer = setTimeout(() => {
+            gridRef.current?.api.flushAllAnimationFrames();
+            window.print();
+            setPrinting(false);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [printing, gridRef]);
+
     // AG Grid takes a moment to draw its first rows (longer with many wrapped rows to measure), so
     // until it has, the grid is hidden behind a progress bar rather than showing empty. A report
     // with no rows never draws one, so it counts as ready once its (empty) model settles.
@@ -330,6 +362,13 @@ function ReportAGrid({
 
     // quiet, so they don't compete with the report: no box, small, in the secondary text colour
     const toolStyle = { fontSize: muiTheme.typography.body2.fontSize, color: 'text.secondary' };
+    const toolButton = (label, Icon, onClick) => (
+        <Tooltip title={label}>
+            <IconButton size="small" aria-label={label} onClick={onClick} sx={toolStyle}>
+                <Icon />
+            </IconButton>
+        </Tooltip>
+    );
 
     return (
         <Box sx={{ mb: 3 }}>
@@ -372,42 +411,52 @@ function ReportAGrid({
                             }}
                         >
                             {title}
-                            {openLinksInNewTabs ? <OpenInNewIcon /> : <LinkIcon />}
+                            {openLinksInNewTabs ? (
+                                <OpenInNewIcon className="titleLinkIcon" />
+                            ) : (
+                                <LinkIcon className="titleLinkIcon" />
+                            )}
                         </Box>
                     ) : (
                         title
                     )}
                 </Box>
-                {showExport && (
-                    // a title too long to share its line pushes these onto the next, still at the right
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
-                        <InputBase
-                            placeholder="Search…"
-                            value={quickFilterText}
-                            onChange={e => setQuickFilterText(e.target.value)}
-                            inputProps={{ 'aria-label': 'Search' }}
-                            sx={{
-                                ...toolStyle,
-                                width: 160,
-                                borderBottom: 1,
-                                borderColor: 'divider',
-                                '&.Mui-focused': { borderColor: 'primary.main' }
-                            }}
-                        />
-                        <Button
-                            size="small"
-                            onClick={exportCsv}
-                            sx={{ ...toolStyle, textTransform: 'none', minWidth: 0 }}
-                        >
-                            Export CSV
-                        </Button>
+                {(showExport || showPrint) && (
+                    // a title too long to share its line pushes these onto the next, still at the
+                    // right; not printed
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            ml: 'auto',
+                            '@media print': { display: 'none' }
+                        }}
+                    >
+                        {showExport && (
+                            <InputBase
+                                placeholder="Search…"
+                                value={quickFilterText}
+                                onChange={e => setQuickFilterText(e.target.value)}
+                                inputProps={{ 'aria-label': 'Search' }}
+                                sx={{
+                                    ...toolStyle,
+                                    width: 160,
+                                    borderBottom: 1,
+                                    borderColor: 'divider',
+                                    '&.Mui-focused': { borderColor: 'primary.main' }
+                                }}
+                            />
+                        )}
+                        {showExport && toolButton('Export CSV', DownloadIcon, exportCsv)}
+                        {showPrint && toolButton('Print', PrintIcon, () => setPrinting(true))}
                     </Box>
                 )}
             </Box>
             <Box
                 sx={{
                     position: 'relative',
-                    ...(autoHeight ? {} : { height }),
+                    ...(autoHeight || printing ? {} : { height }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
                     // Filter icons only on the header you're pointing at, or one with a filter
                     // set. (AG Grid's suppressMenuHide doesn't cover Community's filter button.)
@@ -451,9 +500,9 @@ function ReportAGrid({
                     getRowClass={getRowClass}
                     context={{ openLinksInNewTabs }}
                     quickFilterText={quickFilterText}
-                    domLayout={autoHeight ? 'autoHeight' : 'normal'}
+                    domLayout={(printing && 'print') || (autoHeight ? 'autoHeight' : 'normal')}
                     onModelUpdated={onModelUpdated}
-                    pagination={paging}
+                    pagination={paging && !printing}
                     paginationPageSize={paging ? pageSize : undefined}
                     paginationPageSizeSelector={pageSizeSelector}
                     onPaginationChanged={paging ? onPaginationChanged : undefined}
@@ -463,6 +512,7 @@ function ReportAGrid({
                     enableCellTextSelection
                     ensureDomOrder
                     tooltipShowDelay={300}
+                    tooltipShowMode="whenTruncated"
                 />
             </Box>
             {showRowCount && report?.results && (

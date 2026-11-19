@@ -5,6 +5,7 @@ import ReportAGrid from './ReportAGrid';
 import {
     basicRows,
     makeLargeReport,
+    makeWideReport,
     makeReport,
     reportWithColours,
     reportWithDates,
@@ -30,13 +31,15 @@ export default {
         renderZeroes: false,
         showHeader: true,
         showExport: false,
+        showPrint: false,
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
         height: '100vh',
-        pageSize: undefined
+        pageSize: undefined,
+        pinnedColumns: 0
     }
 };
 
@@ -141,6 +144,27 @@ export const Paged = {
         pageSize: 100,
         showExport: true,
         fixedRowHeight: true
+    }
+};
+
+export const Print = {
+    name: 'Export CSV and Print (Print prints every row, not just the page)',
+    args: {
+        report: makeLargeReport(300),
+        showExport: true,
+        showPrint: true,
+        pageSize: 100,
+        fixedRowHeight: true
+    }
+};
+
+export const PinnedColumns = {
+    name: 'Pinned columns (product and description stay in view; long headers have tooltips)',
+    args: {
+        report: makeWideReport(40),
+        pinnedColumns: 2,
+        fixedRowHeight: true,
+        showExport: true
     }
 };
 

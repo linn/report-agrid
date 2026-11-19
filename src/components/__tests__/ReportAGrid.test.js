@@ -317,6 +317,54 @@ describe('ReportAGrid paging', () => {
     });
 });
 
+describe('ReportAGrid toolbar', () => {
+    test('Export CSV is an icon button that exports', async () => {
+        const gridRef = { current: null };
+        render(<ReportAGrid report={makeReport([])} showExport gridRef={gridRef} />);
+        await screen.findByText('Widget');
+        const spy = jest.spyOn(gridRef.current.api, 'exportDataAsCsv').mockImplementation(() => {});
+
+        await userEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+        expect(spy).toHaveBeenCalledWith({ fileName: 'Report.csv' });
+        expect(screen.queryByRole('button', { name: 'Print' })).not.toBeInTheDocument();
+    });
+
+    test('Print prints every row, unpaged, then puts the grid back', async () => {
+        const rows = Array.from({ length: 25 }, (_, i) =>
+            row(`r${i}`, 'Normal', `Product ${i}`, i)
+        );
+        let layoutWhenPrinted;
+        const print = jest.spyOn(window, 'print').mockImplementation(() => {
+            const wrapper = document.querySelector('.ag-root-wrapper');
+            layoutWhenPrinted = {
+                print: wrapper.classList.contains('ag-layout-print'),
+                paged: !document.querySelector('.ag-paging-panel').classList.contains('ag-hidden')
+            };
+        });
+        render(<ReportAGrid report={makeReport([], rows)} showPrint pageSize={5} />);
+        await screen.findByText('Product 0');
+        expect(screen.queryByRole('textbox', { name: 'Search' })).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Print' }));
+        await waitFor(() => expect(print).toHaveBeenCalledTimes(1));
+        expect(layoutWhenPrinted).toEqual({ print: true, paged: false });
+        await waitFor(() =>
+            expect(document.querySelector('.ag-root-wrapper')).not.toHaveClass('ag-layout-print')
+        );
+        expect(document.querySelector('.ag-paging-panel')).not.toHaveClass('ag-hidden');
+        print.mockRestore();
+    });
+
+    test('pinnedColumns pins the first columns to the left', async () => {
+        render(<ReportAGrid report={makeReport([])} pinnedColumns={1} />);
+        await screen.findByText('Widget');
+        expect(
+            cellOf(screen.getByText('Widget')).closest('.ag-grid-pinned-left-cells')
+        ).not.toBeNull();
+        expect(cellOf(screen.getByText('12.50')).closest('.ag-grid-pinned-left-cells')).toBeNull();
+    });
+});
+
 describe('ReportAGrids', () => {
     const second = () => ({ ...makeReport([]), title: { displayString: 'Second' } });
 

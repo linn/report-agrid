@@ -280,7 +280,60 @@ const makeLargeReport = rowCount => ({
     totals: { values: [{}, {}, { displayValue: 'n/a' }, {}, { displayValue: 0 }] }
 });
 
+// Sales by month: a product and a description, then a quantity and value for every month and a
+// total, too wide for the screen. Some headers are long, to show their tooltips when cut off.
+const makeWideReport = rowCount => {
+    const monthColumns = months.flatMap(m => [
+        { id: `${m}Qty`, header: `${m} Qty`, decimalPlaces: 0 },
+        { id: `${m}Value`, header: `${m} Value (GBP, net of discount)`, decimalPlaces: 2 }
+    ]);
+    return {
+        title: { displayString: `Sales by month (${rowCount} products)` },
+        headers: {
+            columnHeaders: ['Product', 'Description', ...monthColumns.map(c => c.header), 'Total'],
+            totalColumns: [monthColumns.length + 2],
+            dataGridColumnSpecifications: [
+                { columnId: 'product', align: 'left', columnWidth: 140, columnType: 'text' },
+                { columnId: 'description', align: 'left', columnWidth: 220, columnType: 'text' },
+                ...monthColumns.map(c => ({
+                    columnId: c.id,
+                    align: 'right',
+                    columnWidth: 110,
+                    columnType: 'number',
+                    decimalPlaces: c.decimalPlaces
+                })),
+                {
+                    columnId: 'total',
+                    align: 'right',
+                    columnWidth: 130,
+                    columnType: 'number',
+                    decimalPlaces: 2
+                }
+            ]
+        },
+        results: Array.from({ length: rowCount }, (_, i) => {
+            const values = months.flatMap((_m, j) => {
+                const qty = (i * 7 + j * 3) % 40;
+                return [qty, qty * (((i * 13) % 200) + 0.99)];
+            });
+            const total = values.filter((_v, k) => k % 2 === 1).reduce((a, b) => a + b, 0);
+            return {
+                rowTitle: { displayString: `row${i}` },
+                rowType: 'Normal',
+                values: [
+                    { displayValue: `P${String(i + 1).padStart(4, '0')}` },
+                    { displayValue: `${products[i % products.length]}, mark ${(i % 5) + 1}` },
+                    ...values.map(v => ({ displayValue: v })),
+                    { displayValue: total }
+                ]
+            };
+        }),
+        totals: { values: [] }
+    };
+};
+
 export {
+    makeWideReport,
     makeLargeReport,
     makeReport,
     basicRows,
