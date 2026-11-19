@@ -468,8 +468,24 @@ describe('ReportAGrid search', () => {
         expect(search()).toHaveFocus();
     });
 
+    test('comes with Export CSV by default', async () => {
+        render(<ReportAGrid report={makeReport([], rows())} />);
+        await screen.findByText('Product 0');
+        expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument();
+    });
+
+    test('showExport off takes both away', async () => {
+        render(<ReportAGrid report={makeReport([], rows())} showExport={false} />);
+        await screen.findByText('Product 0');
+        expect(screen.queryByRole('button', { name: 'Search' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
+    });
+
     test('can be shown without Export CSV, or hidden with it', async () => {
-        const { unmount } = render(<ReportAGrid report={makeReport([], rows())} showSearch />);
+        const { unmount } = render(
+            <ReportAGrid report={makeReport([], rows())} showExport={false} showSearch />
+        );
         await screen.findByText('Product 0');
         expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
@@ -525,6 +541,19 @@ describe('ReportAGrids', () => {
         container
             .querySelectorAll('.ag-header')
             .forEach(header => expect(header).not.toHaveStyle({ height: '0px' }));
+    });
+
+    test('gives each report Export CSV and search by default, or neither with perReportExport off', async () => {
+        const { unmount } = render(<ReportAGrids reportData={[makeReport([]), second()]} />);
+        await waitFor(() => expect(screen.getAllByText('Widget')).toHaveLength(2));
+        expect(screen.getAllByRole('button', { name: 'Export CSV' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'Search' })).toHaveLength(2);
+        unmount();
+
+        render(<ReportAGrids reportData={[makeReport([]), second()]} perReportExport={false} />);
+        await waitFor(() => expect(screen.getAllByText('Widget')).toHaveLength(2));
+        expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Search' })).not.toBeInTheDocument();
     });
 
     test('without repeatHeaders, only the first report has headers', async () => {

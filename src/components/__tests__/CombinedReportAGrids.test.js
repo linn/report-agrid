@@ -105,7 +105,7 @@ describe('CombinedReportAGrids', () => {
     });
 
     test('search keeps a matching report, with its title, and drops the others', async () => {
-        renderCombined({ showExport: true });
+        renderCombined();
         await screen.findByText('J-THREE');
 
         await searchFor('j-three');
@@ -116,14 +116,22 @@ describe('CombinedReportAGrids', () => {
         expect(screen.queryByText('9001 - MADE UP ACCOUNT')).not.toBeInTheDocument();
     });
 
-    test('has no search or export unless asked, and search can come without export', async () => {
-        const { unmount } = renderCombined();
+    test('has search and export by default', async () => {
+        renderCombined();
+        await screen.findByText('J-THREE');
+
+        expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument();
+    });
+
+    test('showExport off takes both away, unless showSearch keeps the search', async () => {
+        const { unmount } = renderCombined({ showExport: false });
         await screen.findByText('J-THREE');
         expect(screen.queryByRole('button', { name: 'Search' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
         unmount();
 
-        renderCombined({ showSearch: true });
+        renderCombined({ showExport: false, showSearch: true });
         await screen.findByText('J-THREE');
         expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();

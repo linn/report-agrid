@@ -39,7 +39,6 @@ export default {
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
-        showExport: true,
         height: 'fill'
     }
 };

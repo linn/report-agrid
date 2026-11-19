@@ -29,7 +29,7 @@ export default {
         renderZeroes: false,
         titlesVariant: 'h6',
         repeatHeaders: true,
-        perReportExport: false,
+        perReportExport: true,
         openLinksInNewTabs: true,
         showTotals: false,
         fixedRowHeight: false,
@@ -50,7 +50,10 @@ export const NoRepeatHeaders = {
     args: { repeatHeaders: false }
 };
 
-export const WithExportPerReport = { name: 'Per-report export', args: { perReportExport: true } };
+export const WithoutExportPerReport = {
+    name: 'Without per-report export (perReportExport off)',
+    args: { perReportExport: false }
+};
 
 export const LargeReports = {
     name: 'Two large reports (2,000 rows each)',
@@ -71,10 +74,10 @@ const manyReports = makeManyReports(150);
 
 export const ManyReportsLazy = {
     name: 'Many reports, lazy (150 accounts)',
-    args: { reportData: manyReports, lazy: true, perReportExport: true }
+    args: { reportData: manyReports, lazy: true }
 };
 
 export const ManyReports = {
     name: 'Many reports, not lazy (150 accounts)',
-    args: { reportData: manyReports, perReportExport: true }
+    args: { reportData: manyReports }
 };

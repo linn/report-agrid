@@ -19,7 +19,7 @@ npm i @linn-it/report-agrid
 ```js
 import { ReportAGrid, ReportAGrids } from '@linn-it/report-agrid';
 
-<ReportAGrid report={report} showTotals showExport />
+<ReportAGrid report={report} showTotals />
 <ReportAGrids reportData={reports} repeatHeaders={false} />
 ```
 
@@ -44,7 +44,7 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   page; the totals row shows on every page and is the whole report's. A page that fits within
   `maxRowsWithoutScroll` grows to fit; a bigger one is `height` tall and scrolls.
 - The totals row is pinned to the bottom: always in view, and not moved by sorting.
-- `showExport` gives an Export CSV icon button (no column chooser; AG Grid's Excel export is in its
+- `showExport` (on by default; `perReportExport` on `ReportAGrids`) gives an Export CSV icon button (no column chooser; AG Grid's Excel export is in its
   paid edition) and, unless `showSearch={false}`, a search. `showSearch` on its own gives the search
   without export. The search is an icon that opens into a box when clicked: it closes again when left
   empty, stays open while it has text, and Escape or × clears it.
@@ -84,16 +84,17 @@ column headings.
 ```jsx
 import { CombinedReportAGrids } from '@linn-it/report-agrid';
 
-<CombinedReportAGrids reportData={reports} showExport />;
+<CombinedReportAGrids reportData={reports} />;
 ```
 
 - The reports should share their columns, as a multi-report endpoint's do: the first report's are
   used.
 - A bar above the grid names the report at the top of the view, so you know where you are once its
   title row has scrolled away.
-- `showExport` exports the whole grid as one CSV, each title in the first column and a blank line
-  between reports. `showSearch` (following `showExport` unless given) searches every report, and
-  keeps each report's title and totals with its matching rows.
+- Export CSV and a search are on by default, as on `ReportAGrid`. Export CSV exports the whole grid as one CSV, each title in the first column and a blank
+  line between reports. The search covers every report, and keeps each report's title and totals
+  with its matching rows. `showExport={false}` takes both away; `showSearch` (following
+  `showExport` unless given) keeps or drops the search on its own.
 - Column headings sort and filter every row in the grid, titles and blank rows included, so those
   can move or drop out while a sort or filter is on.
 - `height` is `"fill"` by default: the window less `fillOffset` (default 155px, room for the bar),

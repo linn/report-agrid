@@ -72,8 +72,8 @@ function CombinedReportAGrids({
     openLinksInNewTabs = true,
     fixedRowHeight = false,
     // Export CSV exports the whole grid, every report, with each title in the first column and a
-    // blank line between reports
-    showExport = false,
+    // blank line between reports. On by default, as on ReportAGrid.
+    showExport = true,
     // one search across every report; a report's title and totals stay with its matching rows
     showSearch = showExport,
     exportFileName = 'report',
