@@ -34,8 +34,9 @@ function ReportAGrid({
     renderZeroes = false,
     titleVariant = 'h6',
     showHeader = true,
-    showExport = false,
-    // a search icon that opens into a box searching every column; shown with Export CSV by default,
+    // Export CSV, on by default (ReportDataGrid's is off; set showExport={false} to match it)
+    showExport = true,
+    // a search icon that opens into a box searching every column; follows showExport unless given,
     // as ReportDataGrid's toolbar has both
     showSearch = showExport,
     // a Print button, which prints every row (not just those in view, or the page when paging)

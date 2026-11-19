@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.0] - 2026-11-19
+- CombinedReportAGrids: the same reportData as ReportAGrids, drawn as one grid. Each report's title is a full-width row, then its rows, its totals (with showTotals) and a blank row before the next, so only the rows in view are ever drawn however many reports there are. A bar above the grid names the report at the top of the view. Export CSV and a search are on by default, each covering every report (the search keeps each title and its totals with its matching rows); showExport={false} takes them away. Column headings sort and filter every row, titles included. height defaults to "fill", allowing 155px for the bar. The reports should share their columns; the first report's are used.
+- Export CSV and search are on by default everywhere: showExport on ReportAGrid and perReportExport on ReportAGrids now default to true (search follows them unless showSearch is given). This differs from ReportDataGrid; pass showExport={false} or perReportExport={false} for a report without them.
+- README: which of the three to use.
 ## [0.3.0] - 2026-11-19
 - lazy on ReportAGrids (off by default): a report's grid is drawn only while it is near the screen (within lazyMargin, default "150%", above or below it), with just its title otherwise, so a page of hundreds of reports opens and scrolls quickly. A report keeps its place on the page while it isn't drawn: its height is estimated from the rows drawn so far until it has been drawn, then is the height it was drawn at. A grid drawn again starts afresh (search, sort and filters cleared), and the browser's own find and page printing only see the reports drawn at the time.
 - New stories: 150 reports of one per account, lazy and not, to compare.

@@ -30,7 +30,7 @@ export default {
         report: makeReport('Products Report', basicRows),
         renderZeroes: false,
         showHeader: true,
-        showExport: false,
+        showExport: true,
         // left out, so it follows showExport as it does in an app
         showSearch: undefined,
         showPrint: false,
@@ -67,9 +67,9 @@ export const WithSubtotalRows = {
 
 export const WithRowCount = { name: 'With row count', args: { showRowCount: true } };
 
-export const WithSearchAndExport = {
-    name: 'With search and export',
-    args: { showExport: true }
+export const WithoutSearchAndExport = {
+    name: 'Without search and export (showExport off)',
+    args: { showExport: false }
 };
 
 export const LongTitleWithSearchAndExport = {
@@ -153,6 +153,7 @@ export const SearchOnly = {
     name: 'Search only (showSearch without showExport): an icon until clicked',
     args: {
         report: makeLargeReport(300),
+        showExport: false,
         showSearch: true,
         showRowCount: true,
         fixedRowHeight: true

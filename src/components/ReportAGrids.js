@@ -53,7 +53,8 @@ function ReportAGrids({
     renderZeroes = false,
     titlesVariant = 'h6',
     repeatHeaders = true,
-    perReportExport = false,
+    // each report's Export CSV (and search), on by default
+    perReportExport = true,
     showSearch = perReportExport,
     showPrint = false,
     openLinksInNewTabs = true,
