@@ -1,6 +1,7 @@
 # Changelog
 ## [0.1.3] - 2026-11-19
 - Optional paging on ReportAGrid and ReportAGrids: pageSize pages the report that many rows at a time, with a page size selector (pageSizeOptions, default 25, 50, 100, 250, 500). Off by default. Search and filters go back to page 1, Export CSV still exports every row, and the totals row (the whole report's) shows on every page.
+- The row count (showRowCount) shows the rows the search and filters leave as well as the total, e.g. "Number of rows: 45 of 2,000", with thousands separators. It lines up with the text in the first column rather than being indented.
 - Export CSV is a download icon with an "Export CSV" tooltip, rather than the words.
 - Optional Print button: showPrint on ReportAGrid and ReportAGrids. It prints every row (every page, not just the rows in view), without the search box and buttons.
 - pinnedColumns on ReportAGrid and ReportAGrids keeps the report's first columns in view when scrolling sideways.

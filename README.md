@@ -43,6 +43,7 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
 - `showExport` gives a search box and an Export CSV icon button (no column chooser; AG Grid's Excel
   export is in its paid edition). `showPrint` gives a Print icon button, which prints every row (all
   pages, not just the rows in view) and leaves the search and buttons off the printout.
+- `showRowCount` shows the rows left by the search and filters too: "Number of rows: 45 of 2,000".
 - `pinnedColumns={n}` keeps the report's first n columns in view when scrolling sideways.
 - A column header that is cut off shows its full text in a tooltip, as does a cut-off cell with
   `fixedRowHeight`.

@@ -524,7 +524,10 @@ function ReportAGrid({
                     variant="body2" // the grid's 1px border, then a cell's padding
                     sx={{ mt: 0.5, pl: `${cellPadding + 1}px` }}
                 >
-                    Number of rows: {report.results.length}
+                    Number of rows:{' '}
+                    {rowsShowing !== null && rowsShowing !== report.results.length
+                        ? `${rowsShowing.toLocaleString('en-GB')} of ${report.results.length.toLocaleString('en-GB')}`
+                        : report.results.length.toLocaleString('en-GB')}
                 </Typography>
             )}
         </Box>

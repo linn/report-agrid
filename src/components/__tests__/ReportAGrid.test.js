@@ -194,6 +194,36 @@ describe('ReportAGrid with many rows', () => {
         expect(document.querySelector('.ag-paging-panel')).toHaveClass('ag-hidden');
     });
 
+    test('the row count shows how many rows the search and filters leave', async () => {
+        render(<ReportAGrid report={makeReport([], manyRows(2000))} showRowCount showExport />);
+        await screen.findByText('Product 0');
+        expect(screen.getByText('Number of rows: 2,000')).toBeInTheDocument();
+
+        // Product 199, 1199 and 1990 to 1999
+        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 199');
+        expect(await screen.findByText('Number of rows: 12 of 2,000')).toBeInTheDocument();
+
+        await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
+        expect(await screen.findByText('Number of rows: 2,000')).toBeInTheDocument();
+    });
+
+    test('paged, the row count is every row the search leaves, not the page', async () => {
+        render(
+            <ReportAGrid
+                report={makeReport([], manyRows(250))}
+                showRowCount
+                showExport
+                pageSize={5}
+            />
+        );
+        await screen.findByText('Product 0');
+        expect(screen.getByText('Number of rows: 250')).toBeInTheDocument();
+
+        // Product 24, 124, 224 and 240 to 249: 13 rows, more than the page of 5
+        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 24');
+        expect(await screen.findByText('Number of rows: 13 of 250')).toBeInTheDocument();
+    });
+
     test('the search box filters rows', async () => {
         // jsdom has no layout, so the grid only draws its first ten or so rows
         render(<ReportAGrid report={makeReport([], manyRows(8))} showExport />);
