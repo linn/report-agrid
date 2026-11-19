@@ -1,5 +1,5 @@
 # Changelog
-## [Unreleased]
+## [0.1.4] - 2026-11-19
 - Internal: ReportAGrid is split into smaller files, with no change in behaviour or API. How a report becomes a grid (modules, theme, columns, rows, styles) is in gridParts.js, the title tools and icons (search, export, print) in GridTools.js, and the drill-down link cell in DrillDownCell.js, so a grid that draws many reports at once can share them. None of these are exported from the package.
 ## [0.1.3] - 2026-11-19
 - Optional paging on ReportAGrid and ReportAGrids: pageSize pages the report that many rows at a time, with a page size selector (pageSizeOptions, default 25, 50, 100, 250, 500). Off by default. Search and filters go back to page 1, Export CSV still exports every row, and the totals row (the whole report's) shows on every page.

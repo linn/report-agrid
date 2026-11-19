@@ -1,6 +1,6 @@
 {
   "name": "@linn-it/report-agrid",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "ReportAGrid and ReportAGrids: Linn reports drawn with AG Grid Community, for reports too long for ReportDataGrid's 100-row pages.",
   "private": false,
   "license": "MIT",
