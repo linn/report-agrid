@@ -74,6 +74,9 @@ const PrintIcon = icon(
     'M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3m-3 11H8v-5h8zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1m-1-9H6v4h12z'
 );
 
+// a cell's left and right padding in px; the row count lines up with the text in the first column
+const cellPadding = 8;
+
 const defaultPageSizeOptions = [25, 50, 100, 250, 500];
 
 const isZero = v => v === 0 || v === '0';
@@ -153,6 +156,7 @@ function ReportAGrid({
                 wrapperBorderRadius: muiTheme.shape.borderRadius,
                 // compact, like ReportDataGrid's density="compact"
                 spacing: 4,
+                cellHorizontalPadding: cellPadding,
                 rowHeight: fixedRowHeight ? 30 : undefined,
                 // AG Grid keeps a short grid's rows area at least 150px tall, which left a gap above
                 // the pinned totals row; one row's height still has room for "No Rows To Show".
@@ -516,7 +520,10 @@ function ReportAGrid({
                 />
             </Box>
             {showRowCount && report?.results && (
-                <Typography variant="body2" sx={{ pl: 2, mt: 0.5 }}>
+                <Typography
+                    variant="body2" // the grid's 1px border, then a cell's padding
+                    sx={{ mt: 0.5, pl: `${cellPadding + 1}px` }}
+                >
                     Number of rows: {report.results.length}
                 </Typography>
             )}
