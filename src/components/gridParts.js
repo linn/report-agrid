@@ -47,6 +47,15 @@ export const cellPadding = 8;
 
 const isZero = v => v === 0 || v === '0';
 
+// height="fill": as tall as the window less fillOffset, the room left for what sits above the grid
+// (its title, or a bar), so that, the column headings and the last row are all on screen at once;
+// but never under minFillHeight. Any other height is used as it is, as CSS.
+export const defaultMinFillHeight = 400;
+// a ReportAGrid's title sits above its grid
+export const defaultReportFillOffset = 203;
+export const resolveHeight = (height, fillOffset, minFillHeight) =>
+    height === 'fill' ? `max(${minFillHeight}px, calc(100vh - ${fillOffset}px))` : height;
+
 // The grid's theme, from the app's MUI theme.
 export const gridTheme = (muiTheme, fixedRowHeight) =>
     themeQuartz.withParams({

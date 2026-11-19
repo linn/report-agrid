@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ReportAGrid from '../ReportAGrid';
 import ReportAGrids from '../ReportAGrids';
+import { resolveHeight } from '../gridParts';
 
 const cellOf = el => el.closest('[role="gridcell"]');
 const rowOf = el => el.closest('[role="row"]');
@@ -318,6 +319,16 @@ describe('ReportAGrid height', () => {
 
         await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
         await waitFor(() => expect(layout()).toBe('scrolls'));
+    });
+
+    // jsdom lays nothing out, so these check the CSS height a scrolling grid is given
+    test('fill is the window less fillOffset, but at least minFillHeight', () => {
+        expect(resolveHeight('fill', 203, 400)).toBe('max(400px, calc(100vh - 203px))');
+    });
+
+    test('any other height is used as it is', () => {
+        expect(resolveHeight('500px', 203, 400)).toBe('500px');
+        expect(resolveHeight('100vh', 203, 400)).toBe('100vh');
     });
 });
 

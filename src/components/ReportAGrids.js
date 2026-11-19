@@ -16,7 +16,10 @@ function ReportAGrids({
     fixedRowHeight = false,
     showRowCount = false,
     maxRowsWithoutScroll = 100,
-    height = '100vh',
+    height = 'fill',
+    // left unset, ReportAGrid's own defaults
+    fillOffset,
+    minFillHeight,
     pageSize,
     pageSizeOptions,
     pinnedColumns = 0,
@@ -47,6 +50,8 @@ function ReportAGrids({
                     showRowCount={showRowCount}
                     maxRowsWithoutScroll={maxRowsWithoutScroll}
                     height={height}
+                    fillOffset={fillOffset}
+                    minFillHeight={minFillHeight}
                     pageSize={pageSize}
                     pageSizeOptions={pageSizeOptions}
                     pinnedColumns={pinnedColumns}

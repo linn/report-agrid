@@ -1,19 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import BusyBar from './BusyBar.js';
 import {
     buildColumnDefs,
     buildRow,
     buildTotalsRow,
     cellPadding,
+    defaultMinFillHeight,
+    defaultReportFillOffset,
     getRowClass,
     gridStyles,
     gridTheme,
-    modules
+    modules,
+    resolveHeight
 } from './gridParts.js';
 import {
     DownloadIcon,
@@ -45,7 +48,11 @@ function ReportAGrid({
     // scrollbar of its own: the page scrolls. More, and it is `height` tall and scrolls itself,
     // drawing only the rows in view, which keeps thousands of rows fast. Infinity: always grow.
     maxRowsWithoutScroll = 100,
-    height = '100vh',
+    // 'fill': as tall as the window less fillOffset (room for the title above), at least
+    // minFillHeight; or any CSS height
+    height = 'fill',
+    fillOffset = defaultReportFillOffset,
+    minFillHeight = defaultMinFillHeight,
     // Off by default: every row in one list. A number pages the report that many rows at a time,
     // with a selector of pageSizeOptions (pageSize is added to them if it isn't one).
     pageSize,
@@ -233,19 +240,16 @@ function ReportAGrid({
             <Box
                 sx={{
                     position: 'relative',
-                    ...(autoHeight || printing ? {} : { height }),
+                    ...(autoHeight || printing
+                        ? {}
+                        : { height: resolveHeight(height, fillOffset, minFillHeight) }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
                     ...gridStyles,
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}
             >
-                {!ready && (
-                    <LinearProgress
-                        aria-label="Loading"
-                        sx={{ position: 'absolute', top: 0, left: 0, right: 0 }}
-                    />
-                )}
+                {!ready && <BusyBar sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />}
                 <AgGridReact
                     // suppressColumnVirtualisation is only read when a grid is made, so switching
                     // between fixed and wrapped rows makes a new one

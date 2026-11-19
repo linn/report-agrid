@@ -35,7 +35,7 @@ export default {
         fixedRowHeight: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
-        height: '100vh'
+        height: 'fill'
     }
 };
 
