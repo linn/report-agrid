@@ -48,15 +48,18 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   the rows in view) and leaves the search and buttons off the printout.
 - `showRowCount` shows the rows left by the search and filters too: "Number of rows: 45 of 2,000".
 - `pinnedColumns={n}` keeps the report's first n columns in view when scrolling sideways.
-- A column header that is cut off shows its full text in a tooltip, as does a cut-off cell with
-  `fixedRowHeight`.
+- A column header that is cut off shows its full text in a tooltip, as does a cut-off cell that
+  doesn't wrap: every cell with `fixedRowHeight`, and number and date cells always.
+- Only text wraps onto more lines: number and date cells stay on one, so they never make a row taller.
+- `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and
+  below, so they're ready before they scroll in.
 - Every column can be filtered from its header: dates as dates, numbers as numbers.
 - `ReportAGrids` with `repeatHeaders={false}` keeps every report's columns in step with the first, so
   resizing a column or scrolling sideways moves them all.
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
 Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `pageSize`,
-`pageSizeOptions`, `pinnedColumns`, `showSearch` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
+`pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
 `ReportAGrids`).
 
 ## Development

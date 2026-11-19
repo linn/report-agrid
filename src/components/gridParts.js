@@ -67,6 +67,11 @@ export const gridTheme = (muiTheme, fixedRowHeight) =>
         autoHeightMinBodyHeight: 30
     });
 
+// A drill-down needs a React cell renderer (a link); every other cell is left to AG Grid to draw
+// as plain text, which is much cheaper on a long report.
+const drillDownRendererFor = field => params =>
+    params.data?.[`${field}DrillDown`] ? { component: DrillDownCell } : undefined;
+
 // The report's columns as AG Grid column definitions.
 export const buildColumnDefs = (report, { fixedRowHeight, pinnedColumns }) =>
     report.headers.dataGridColumnSpecifications.map((spec, i) => {
@@ -74,6 +79,16 @@ export const buildColumnDefs = (report, { fixedRowHeight, pinnedColumns }) =>
         const isDate = spec.columnType === 'date';
         const isNumber = spec.columnType === 'number';
         const alignClass = spec.align ? `align-${spec.align}` : '';
+        // Only text wraps: a number or date never needs a second line, and each column that can
+        // grow a row (autoHeight) is one more cell AG Grid measures on every row it draws.
+        const wraps = !fixedRowHeight && !isNumber && !isDate;
+        // Made once per column, not for every cell: an Intl.NumberFormat is slow to make.
+        const numberFormat =
+            isNumber &&
+            new Intl.NumberFormat('en-GB', {
+                minimumFractionDigits: spec.decimalPlaces ?? 2,
+                maximumFractionDigits: spec.decimalPlaces ?? 99
+            });
 
         return {
             field,
@@ -88,15 +103,19 @@ export const buildColumnDefs = (report, { fixedRowHeight, pinnedColumns }) =>
                 .join(' '),
             cellStyle: params => {
                 const attributes = params.data?.[`${field}Attributes`];
+                if (!attributes) {
+                    return undefined;
+                }
                 return {
                     backgroundColor: attributeValue(attributes, 'background-colour'),
                     color: attributeValue(attributes, 'text-colour')
                 };
             },
-            wrapText: !fixedRowHeight,
-            autoHeight: !fixedRowHeight,
-            tooltipValueGetter: fixedRowHeight ? p => p.valueFormatted ?? p.value : undefined,
-            cellRenderer: DrillDownCell,
+            wrapText: wraps,
+            autoHeight: wraps,
+            // a cell that doesn't wrap shows its full text in a tooltip when it's cut off
+            tooltipValueGetter: wraps ? undefined : p => p.valueFormatted ?? p.value,
+            cellRendererSelector: drillDownRendererFor(field),
             filter:
                 (isDate && 'agDateColumnFilter') ||
                 (isNumber && 'agNumberColumnFilter') ||
@@ -114,16 +133,8 @@ export const buildColumnDefs = (report, { fixedRowHeight, pinnedColumns }) =>
                 useValueFormatterForExport: true
             }),
             ...(isNumber && {
-                valueFormatter: p => {
-                    if (p.value || isZero(p.value)) {
-                        const { decimalPlaces } = spec;
-                        return Intl.NumberFormat('en-GB', {
-                            minimumFractionDigits: decimalPlaces ?? 2,
-                            maximumFractionDigits: decimalPlaces ?? 99
-                        }).format(p.value);
-                    }
-                    return p.value;
-                },
+                valueFormatter: p =>
+                    p.value || isZero(p.value) ? numberFormat.format(p.value) : p.value,
                 // CSV keeps raw numbers (no thousands separators) so spreadsheets read them
                 useValueFormatterForExport: false
             })

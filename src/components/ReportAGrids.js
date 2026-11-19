@@ -19,7 +19,8 @@ function ReportAGrids({
     height = '100vh',
     pageSize,
     pageSizeOptions,
-    pinnedColumns = 0
+    pinnedColumns = 0,
+    rowBuffer = 10
 }) {
     const gridRefs = useMemo(() => reportData.map(() => createRef()), [reportData]);
 
@@ -49,6 +50,7 @@ function ReportAGrids({
                     pageSize={pageSize}
                     pageSizeOptions={pageSizeOptions}
                     pinnedColumns={pinnedColumns}
+                    rowBuffer={rowBuffer}
                     gridRef={gridRefs[i]}
                     alignedGrids={alignedGridsFor(i)}
                 />

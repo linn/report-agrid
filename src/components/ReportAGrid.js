@@ -52,6 +52,9 @@ function ReportAGrid({
     pageSizeOptions = defaultPageSizeOptions,
     // this many of the report's first columns stay in view when scrolling sideways
     pinnedColumns = 0,
+    // rows drawn beyond those in view, above and below, so they're ready before they scroll in
+    // (AG Grid's default)
+    rowBuffer = 10,
     // a ref given the AgGridReact, for its api (ReportAGrids uses it to align its grids)
     gridRef: outerGridRef,
     // AG Grid's alignedGrids: other grids whose column widths and scroll this one keeps in step with
@@ -244,6 +247,9 @@ function ReportAGrid({
                     />
                 )}
                 <AgGridReact
+                    // suppressColumnVirtualisation is only read when a grid is made, so switching
+                    // between fixed and wrapped rows makes a new one
+                    key={fixedRowHeight ? 'fixed' : 'wrapped'}
                     ref={gridRef}
                     modules={modules}
                     alignedGrids={alignedGrids}
@@ -263,8 +269,13 @@ function ReportAGrid({
                     onPaginationChanged={paging ? onPaginationChanged : undefined}
                     onFilterChanged={paging ? onFilterChanged : undefined}
                     onFirstDataRendered={onFirstDataRendered}
-                    suppressColumnVirtualisation
+                    // Wrapped rows are measured from the cells drawn, so every column is drawn;
+                    // with fixed rows, columns out of view sideways are drawn as they come in.
+                    suppressColumnVirtualisation={!fixedRowHeight}
+                    rowBuffer={rowBuffer}
                     enableCellTextSelection
+                    // rows in the page in the order shown, so text selected across rows copies in
+                    // that order (and screen readers and tests read it so)
                     ensureDomOrder
                     tooltipShowDelay={300}
                     tooltipShowMode="whenTruncated"

@@ -186,6 +186,48 @@ describe('ReportAGrid drill-downs', () => {
         expect(link).toHaveAttribute('href', 'https://app.linn.co.uk/widget');
         expect(link).not.toHaveAttribute('target', '_blank');
     });
+
+    test('a cell with no drill-down is plain text, not a link', async () => {
+        render(<ReportAGrid report={makeReport([])} />);
+
+        await screen.findByText('Widget');
+        expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    });
+});
+
+describe('ReportAGrid drawing cells cheaply', () => {
+    test('only text wraps: number cells never grow a row', async () => {
+        render(<ReportAGrid report={makeReport([])} />);
+
+        expect(cellOf(await screen.findByText('Widget'))).toHaveClass('ag-cell-wrap-text');
+        expect(cellOf(screen.getByText('12.50'))).not.toHaveClass('ag-cell-wrap-text');
+    });
+
+    test('a cell with no colours of its own gets no inline colours', async () => {
+        render(<ReportAGrid report={makeReport([])} />);
+
+        const cell = cellOf(await screen.findByText('Widget'));
+        expect(cell.style.color).toBe('');
+        expect(cell.style.backgroundColor).toBe('');
+    });
+
+    test('switching to fixed rows stops text wrapping', async () => {
+        const { rerender } = render(<ReportAGrid report={makeReport([])} />);
+        expect(cellOf(await screen.findByText('Widget'))).toHaveClass('ag-cell-wrap-text');
+
+        rerender(<ReportAGrid report={makeReport([])} fixedRowHeight />);
+        await waitFor(() =>
+            expect(cellOf(screen.getByText('Widget'))).not.toHaveClass('ag-cell-wrap-text')
+        );
+    });
+
+    test('rowBuffer sets how many rows are drawn beyond those in view', async () => {
+        const gridRef = { current: null };
+        render(<ReportAGrid report={makeReport([])} rowBuffer={40} gridRef={gridRef} />);
+
+        await screen.findByText('Widget');
+        expect(gridRef.current.api.getGridOption('rowBuffer')).toBe(40);
+    });
 });
 
 describe('ReportAGrid with many rows', () => {
