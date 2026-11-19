@@ -60,11 +60,23 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
 - Every column can be filtered from its header: dates as dates, numbers as numbers.
 - `ReportAGrids` with `repeatHeaders={false}` keeps every report's columns in step with the first, so
   resizing a column or scrolling sideways moves them all.
+- `ReportAGrids` with `lazy` (off by default) draws a report's grid only while it is near the
+  screen, within `lazyMargin` above or below it (default `"150%"`, a screen and a half), and shows
+  just its title otherwise. Use it for many reports at once, such as one per account: without it
+  every report's grid is drawn when the page opens, and hundreds of them make the page slow to open
+  and to scroll. A report keeps its place on the page while it isn't drawn: its height is estimated
+  until it has been drawn, from the rows drawn so far, then is the height it was drawn at. Its
+  trade-offs:
+  - A grid taken away and drawn again starts afresh: its search, sort and filters are cleared.
+  - The browser's own find (Ctrl+F) and printing the page only see the reports drawn at the time.
+    Each report's own Print button prints all of that report.
+  - With `repeatHeaders={false}`, only the grids drawn at the time keep their columns in step.
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
 Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `fillOffset`,
 `minFillHeight`, `pageSize`,
-`pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
+`pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrids`
+only: `lazy` and `lazyMargin`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
 `ReportAGrids`).
 
 ## Development

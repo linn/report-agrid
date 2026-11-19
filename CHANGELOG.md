@@ -1,4 +1,7 @@
 # Changelog
+## [0.3.0] - 2026-11-19
+- lazy on ReportAGrids (off by default): a report's grid is drawn only while it is near the screen (within lazyMargin, default "150%", above or below it), with just its title otherwise, so a page of hundreds of reports opens and scrolls quickly. A report keeps its place on the page while it isn't drawn: its height is estimated from the rows drawn so far until it has been drawn, then is the height it was drawn at. A grid drawn again starts afresh (search, sort and filters cleared), and the browser's own find and page printing only see the reports drawn at the time.
+- New stories: 150 reports of one per account, lazy and not, to compare.
 ## [0.2.0] - 2026-11-19
 - Long reports draw and scroll faster, with the same look:
   - A cell is only drawn by React when it has a drill-down link; every other cell is plain text drawn by AG Grid.

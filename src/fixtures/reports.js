@@ -332,7 +332,85 @@ const makeWideReport = rowCount => {
     };
 };
 
+// Many reports at once, as a ledger history gives one per account: each a few to a couple of
+// hundred rows, with long descriptions that wrap, links on some journals and a subtotal at the end.
+const ledgerWords = ['ACCRUAL', 'REVERSAL OF', 'MONTH END', 'TRANSFER TO', 'ADJUSTMENT FOR'];
+const makeManyReports = reportCount =>
+    Array.from({ length: reportCount }, (_, r) => {
+        const rowCount = 1 + ((r * 37) % 220);
+        let balance = 0;
+        const rows = Array.from({ length: rowCount }, (_r, i) => {
+            const debit = (i * 31 + r * 7) % 3 === 0 ? ((i * 97 + r * 13) % 5000) + 0.5 : 0;
+            const credit = debit ? 0 : ((i * 53 + r * 11) % 4000) + 0.25;
+            balance += debit - credit;
+            const words = ledgerWords[(i + r) % ledgerWords.length];
+            return {
+                rowTitle: { displayString: `row${i}` },
+                rowType: 'Normal',
+                values: [
+                    {
+                        displayValue: String(380000 + r * 300 + i),
+                        drillDowns:
+                            i % 4 === 0
+                                ? [
+                                      {
+                                          href: `/journals/${380000 + r * 300 + i}`,
+                                          externalLink: false
+                                      }
+                                  ]
+                                : []
+                    },
+                    { displayValue: months[(i + r) % 12].toUpperCase() + '2026' },
+                    {
+                        // every third one long enough to wrap
+                        displayValue:
+                            i % 3 === 0
+                                ? `${words} ${products[i % products.length].toUpperCase()} COSTS FOR THE QUARTER, AS AGREED WITH THE DEPARTMENT, PART ${i + 1}`
+                                : `${words} ${products[i % products.length].toUpperCase()}`
+                    },
+                    { displayValue: debit },
+                    { displayValue: credit },
+                    { displayValue: balance }
+                ]
+            };
+        });
+        return {
+            title: { displayString: `${String(9000 + r)} - MADE UP ACCOUNT ${r + 1}` },
+            headers: {
+                columnHeaders: ['Journal', 'Period', 'Description', 'Debit', 'Credit', 'Balance'],
+                totalColumns: [],
+                dataGridColumnSpecifications: [
+                    { columnId: 'journal', align: 'left', columnWidth: 90, columnType: 'text' },
+                    { columnId: 'period', align: 'left', columnWidth: 90, columnType: 'text' },
+                    {
+                        columnId: 'description',
+                        align: 'left',
+                        columnWidth: 260,
+                        columnType: 'text'
+                    },
+                    ...['debit', 'credit', 'balance'].map(columnId => ({
+                        columnId,
+                        align: 'right',
+                        columnWidth: 130,
+                        columnType: 'number',
+                        decimalPlaces: 2
+                    }))
+                ]
+            },
+            results: [
+                ...rows,
+                {
+                    rowTitle: { displayString: 'total' },
+                    rowType: 'Subtotal',
+                    values: [{}, {}, { displayValue: 'TOTAL' }, {}, {}, { displayValue: balance }]
+                }
+            ],
+            totals: null
+        };
+    });
+
 export {
+    makeManyReports,
     makeWideReport,
     makeLargeReport,
     makeReport,
