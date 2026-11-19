@@ -85,7 +85,13 @@ function CombinedReportAGrids({
     rowBuffer = 10,
     pinnedColumns = 0,
     titleRowHeight = 44,
-    spacerRowHeight = 24
+    spacerRowHeight = 24,
+    // Column headings sort and filter every row in the grid, titles and blank rows included, so a
+    // report's rows can end up away from its title. Where a row doesn't say which report it's from
+    // (a balance row, say), that leaves it unidentifiable: turn either off for such reports. The
+    // search above the grid always keeps each title with its matching rows.
+    sortable = true,
+    filterable = true
 }) {
     const muiTheme = useTheme();
     const gridRef = useRef(null);
@@ -96,9 +102,13 @@ function CombinedReportAGrids({
     const columnDefs = useMemo(
         () =>
             reportData.length
-                ? buildColumnDefs(reportData[0], { fixedRowHeight, pinnedColumns })
+                ? buildColumnDefs(reportData[0], { fixedRowHeight, pinnedColumns }).map(column => ({
+                      ...column,
+                      sortable,
+                      filter: filterable ? column.filter : false
+                  }))
                 : [],
-        [reportData, fixedRowHeight, pinnedColumns]
+        [reportData, fixedRowHeight, pinnedColumns, sortable, filterable]
     );
 
     const rowData = useMemo(() => {

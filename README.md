@@ -96,7 +96,10 @@ import { CombinedReportAGrids } from '@linn-it/report-agrid';
   with its matching rows. `showExport={false}` takes both away; `showSearch` (following
   `showExport` unless given) keeps or drops the search on its own.
 - Column headings sort and filter every row in the grid, titles and blank rows included, so those
-  can move or drop out while a sort or filter is on.
+  can move or drop out while a sort or filter is on. Where a row doesn't say which report it's from
+  (an opening balance with only a description and an amount, say), that leaves it unidentifiable, so
+  `sortable={false}` and `filterable={false}` turn them off; the search still keeps each title with
+  its matching rows.
 - `height` is `"fill"` by default: the window less `fillOffset` (default 155px, room for the bar),
   at least `minFillHeight`.
 - Not here, as they're one report's: per-report search, export and print, paging, the row count and
@@ -104,7 +107,8 @@ import { CombinedReportAGrids } from '@linn-it/report-agrid';
 
 Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLinksInNewTabs`,
 `fixedRowHeight`, `showExport`, `showSearch`, `exportFileName`, `height`, `fillOffset`,
-`minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight` and `spacerRowHeight`.
+`minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight`, `spacerRowHeight`, `sortable` and
+`filterable`.
 
 ### Which to use
 
