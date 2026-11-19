@@ -9,12 +9,17 @@ function ReportAGrids({
     titlesVariant = 'h6',
     repeatHeaders = true,
     perReportExport = false,
+    showSearch = perReportExport,
+    showPrint = false,
     openLinksInNewTabs = true,
     showTotals = false,
     fixedRowHeight = false,
     showRowCount = false,
     maxRowsWithoutScroll = 100,
-    height = '100vh'
+    height = '100vh',
+    pageSize,
+    pageSizeOptions,
+    pinnedColumns = 0
 }) {
     const gridRefs = useMemo(() => reportData.map(() => createRef()), [reportData]);
 
@@ -30,6 +35,8 @@ function ReportAGrids({
                     key={d.title.displayString}
                     report={d}
                     showExport={perReportExport}
+                    showSearch={showSearch}
+                    showPrint={showPrint}
                     showTotals={showTotals}
                     fixedRowHeight={fixedRowHeight}
                     renderZeroes={renderZeroes}
@@ -39,6 +46,9 @@ function ReportAGrids({
                     showRowCount={showRowCount}
                     maxRowsWithoutScroll={maxRowsWithoutScroll}
                     height={height}
+                    pageSize={pageSize}
+                    pageSizeOptions={pageSizeOptions}
+                    pinnedColumns={pinnedColumns}
                     gridRef={gridRefs[i]}
                     alignedGrids={alignedGridsFor(i)}
                 />

@@ -5,6 +5,7 @@ import ReportAGrid from './ReportAGrid';
 import {
     basicRows,
     makeLargeReport,
+    makeWideReport,
     makeReport,
     reportWithColours,
     reportWithDates,
@@ -30,12 +31,17 @@ export default {
         renderZeroes: false,
         showHeader: true,
         showExport: false,
+        // left out, so it follows showExport as it does in an app
+        showSearch: undefined,
+        showPrint: false,
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
-        height: '100vh'
+        height: '100vh',
+        pageSize: undefined,
+        pinnedColumns: 0
     }
 };
 
@@ -130,6 +136,47 @@ export const GrowsToFit200Rows = {
         maxRowsWithoutScroll: 250,
         fixedRowHeight: true,
         showRowCount: true
+    }
+};
+
+export const Paged = {
+    name: 'Paged (2,000 rows, 100 to a page, with a page size selector)',
+    args: {
+        report: makeLargeReport(2000),
+        pageSize: 100,
+        showExport: true,
+        fixedRowHeight: true
+    }
+};
+
+export const SearchOnly = {
+    name: 'Search only (showSearch without showExport): an icon until clicked',
+    args: {
+        report: makeLargeReport(300),
+        showSearch: true,
+        showRowCount: true,
+        fixedRowHeight: true
+    }
+};
+
+export const Print = {
+    name: 'Export CSV and Print (Print prints every row, not just the page)',
+    args: {
+        report: makeLargeReport(300),
+        showExport: true,
+        showPrint: true,
+        pageSize: 100,
+        fixedRowHeight: true
+    }
+};
+
+export const PinnedColumns = {
+    name: 'Pinned columns (product and description stay in view; long headers have tooltips)',
+    args: {
+        report: makeWideReport(40),
+        pinnedColumns: 2,
+        fixedRowHeight: true,
+        showExport: true
     }
 };
 
