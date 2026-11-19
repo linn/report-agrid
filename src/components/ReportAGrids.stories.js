@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 import ReportAGrids from './ReportAGrids';
-import { makeLargeReport, makeReport } from '../fixtures/reports';
+import { makeLargeReport, makeManyReports, makeReport } from '../fixtures/reports';
 
 const reportData = [
     makeReport('Widgets Report', [
@@ -63,4 +63,18 @@ export const LargeReports = {
         showRowCount: true,
         height: '50vh'
     }
+};
+
+// One report per account, as a ledger history gives: 150 reports of 1 to 220 rows, with wrapped
+// descriptions. Compare scrolling these two.
+const manyReports = makeManyReports(150);
+
+export const ManyReportsLazy = {
+    name: 'Many reports, lazy (150 accounts)',
+    args: { reportData: manyReports, lazy: true, perReportExport: true }
+};
+
+export const ManyReports = {
+    name: 'Many reports, not lazy (150 accounts)',
+    args: { reportData: manyReports, perReportExport: true }
 };
