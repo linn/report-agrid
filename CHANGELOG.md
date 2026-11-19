@@ -1,4 +1,6 @@
 # Changelog
+## [0.1.3] - 2026-11-19
+- Optional paging on ReportAGrid and ReportAGrids: pageSize pages the report that many rows at a time, with a page size selector (pageSizeOptions, default 25, 50, 100, 250, 500). Off by default. Search and filters go back to page 1, Export CSV still exports every row, and the totals row (the whole report's) shows on every page.
 ## [0.1.2] - 2026-11-18
 - A title that links somewhere is drawn in the title's own colour, not link blue, with a grey underline. On hover the underline darkens and an icon appears after the title (open-in-new when links open in new tabs, otherwise a link). This differs from ReportDataGrid.
 - A progress bar shows while the grid draws its first rows, instead of the title above an empty grid.

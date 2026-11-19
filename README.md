@@ -28,12 +28,17 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
 
 ### Differences from ReportDataGrid
 
-- No paging: every row in one list. Up to `maxRowsWithoutScroll` rows showing (default 100) the grid
+- No paging by default: every row in one list. Up to `maxRowsWithoutScroll` rows showing (default 100) the grid
   grows to fit them, with no scrollbar of its own, and the page scrolls. With more it is `height` tall
   (default `100vh`) and scrolls itself, drawing only the rows in view, which keeps thousands of rows
   fast. It goes by the rows showing after search and filters, so a big report searched down to a few
   rows shrinks to fit them. `maxRowsWithoutScroll={Infinity}` always grows to fit (every row is
   drawn, so keep it for reports of hundreds of rows, not thousands).
+- Paging is there if you want it: `pageSize={100}` pages the report 100 rows at a time, with a page size
+  selector of `pageSizeOptions` (default 25, 50, 100, 250, 500; `pageSize` is added if it isn't one).
+  Search and filters cover every row and go back to page 1; Export CSV exports every row, not just the
+  page; the totals row shows on every page and is the whole report's. A page that fits within
+  `maxRowsWithoutScroll` grows to fit; a bigger one is `height` tall and scrolls.
 - The totals row is pinned to the bottom: always in view, and not moved by sorting.
 - `showExport` gives a search box and an Export CSV button (no print or column chooser; AG Grid's Excel
   export is in its paid edition).
@@ -42,7 +47,8 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   resizing a column or scrolling sideways moves them all.
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
-Extra props on `ReportAGrid`: `maxRowsWithoutScroll`, `height`, and `gridRef` and `alignedGrids` (AG Grid's own, used by
+Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `pageSize` and
+`pageSizeOptions`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
 `ReportAGrids`).
 
 ## Development

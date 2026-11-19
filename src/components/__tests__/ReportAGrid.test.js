@@ -191,7 +191,7 @@ describe('ReportAGrid with many rows', () => {
 
         await screen.findByText('Product 0');
         expect(screen.getByText('Number of rows: 250')).toBeInTheDocument();
-        expect(document.querySelector('.ag-paging-panel')).toBeNull();
+        expect(document.querySelector('.ag-paging-panel')).toHaveClass('ag-hidden');
     });
 
     test('the search box filters rows', async () => {
@@ -240,6 +240,80 @@ describe('ReportAGrid height', () => {
 
         await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
         await waitFor(() => expect(layout()).toBe('scrolls'));
+    });
+});
+
+describe('ReportAGrid paging', () => {
+    // jsdom has no layout, so the grid only draws its first ten or so rows: small pages
+    const manyRows = n =>
+        Array.from({ length: n }, (_, i) => row(`r${i}`, 'Normal', `Product ${i}`, i));
+    const pagingPanel = () => document.querySelector('.ag-paging-panel');
+    const summary = () =>
+        pagingPanel()
+            .querySelector('.ag-paging-row-summary-content')
+            .textContent.replace(/\s+/g, ' ')
+            .trim();
+
+    test('does not page by default', async () => {
+        render(<ReportAGrid report={makeReport([], manyRows(25))} />);
+        await screen.findByText('Product 0');
+        expect(pagingPanel()).toHaveClass('ag-hidden');
+    });
+
+    test('pages by pageSize, with next and previous', async () => {
+        render(
+            <ReportAGrid report={makeReport([], manyRows(25))} pageSize={5} pageSizeOptions={[]} />
+        );
+        await screen.findByText('Product 4');
+        expect(screen.queryByText('Product 5')).not.toBeInTheDocument();
+        expect(pagingPanel()).not.toHaveClass('ag-hidden');
+        expect(summary()).toBe('1 to 5 of 25');
+
+        await userEvent.click(within(pagingPanel()).getByRole('button', { name: 'Next Page' }));
+        expect(await screen.findByText('Product 5')).toBeInTheDocument();
+        expect(screen.queryByText('Product 4')).not.toBeInTheDocument();
+        expect(summary()).toBe('6 to 10 of 25');
+
+        await userEvent.click(within(pagingPanel()).getByRole('button', { name: 'Previous Page' }));
+        expect(await screen.findByText('Product 4')).toBeInTheDocument();
+    });
+
+    test('a page of up to maxRowsWithoutScroll grows to fit, a bigger one scrolls', async () => {
+        const layout = () =>
+            document.querySelector('.ag-root-wrapper').classList.contains('ag-layout-auto-height')
+                ? 'grows to fit'
+                : 'scrolls';
+        const { unmount } = render(
+            <ReportAGrid report={makeReport([], manyRows(500))} pageSize={50} />
+        );
+        await screen.findByText('Product 0');
+        await waitFor(() => expect(layout()).toBe('grows to fit'));
+        unmount();
+
+        render(<ReportAGrid report={makeReport([], manyRows(500))} pageSize={250} />);
+        await screen.findByText('Product 0');
+        await waitFor(() => expect(layout()).toBe('scrolls'));
+    });
+
+    test('the page size selector starts at pageSize', async () => {
+        render(<ReportAGrid report={makeReport([], manyRows(250))} pageSize={75} />);
+        await screen.findByText('Product 0');
+        expect(
+            within(pagingPanel()).getByRole('combobox', { name: 'Page Size' })
+        ).toHaveTextContent('75');
+        expect(summary()).toBe('1 to 75 of 250');
+    });
+
+    test('search goes back to the first page', async () => {
+        render(<ReportAGrid report={makeReport([], manyRows(25))} pageSize={5} showExport />);
+        await screen.findByText('Product 0');
+        await userEvent.click(within(pagingPanel()).getByRole('button', { name: 'Next Page' }));
+        await screen.findByText('Product 5');
+
+        // Product 1, 10 to 19 and 21: 12 rows
+        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 1');
+        await waitFor(() => expect(summary()).toBe('1 to 5 of 12'));
+        expect(screen.getByText('Product 1')).toBeInTheDocument();
     });
 });
 

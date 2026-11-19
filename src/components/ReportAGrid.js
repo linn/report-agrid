@@ -7,6 +7,7 @@ import {
     CsvExportModule,
     DateFilterModule,
     NumberFilterModule,
+    PaginationModule,
     PinnedRowModule,
     QuickFilterModule,
     RowApiModule,
@@ -33,6 +34,7 @@ const modules = [
     CsvExportModule,
     DateFilterModule,
     NumberFilterModule,
+    PaginationModule,
     PinnedRowModule,
     QuickFilterModule,
     RowApiModule,
@@ -61,6 +63,8 @@ const LinkIcon = () => (
         <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5" />
     </svg>
 );
+
+const defaultPageSizeOptions = [25, 50, 100, 250, 500];
 
 const isZero = v => v === 0 || v === '0';
 
@@ -108,6 +112,10 @@ function ReportAGrid({
     // drawing only the rows in view, which keeps thousands of rows fast. Infinity: always grow.
     maxRowsWithoutScroll = 100,
     height = '100vh',
+    // Off by default: every row in one list. A number pages the report that many rows at a time,
+    // with a selector of pageSizeOptions (pageSize is added to them if it isn't one).
+    pageSize,
+    pageSizeOptions = defaultPageSizeOptions,
     // a ref given the AgGridReact, for its api (ReportAGrids uses it to align its grids)
     gridRef: outerGridRef,
     // AG Grid's alignedGrids: other grids whose column widths and scroll this one keeps in step with
@@ -276,10 +284,29 @@ function ReportAGrid({
             fileName: `${report.title?.displayString || 'report'}.csv`
         });
 
+    const paging = pageSize > 0;
+    const pageSizeSelector = useMemo(
+        () =>
+            paging ? [...new Set([...pageSizeOptions, pageSize])].sort((a, b) => a - b) : undefined,
+        [paging, pageSize, pageSizeOptions]
+    );
+    // the page size chosen in the grid's selector, which starts at pageSize
+    const [currentPageSize, setCurrentPageSize] = useState(pageSize);
+    // AG Grid keeps its page when the search or a filter changes, which can leave you on page 3 of 1
+    const onFilterChanged = useCallback(e => e.api.paginationGoToFirstPage(), []);
+    const onPaginationChanged = useCallback(
+        e => setCurrentPageSize(e.api.paginationGetPageSize()),
+        []
+    );
+
     // Decided by the rows showing, not the report's total, so a big report searched down to a few
-    // rows shrinks to fit them (and grows back when the search is cleared).
+    // rows shrinks to fit them (and grows back when the search is cleared). Paged, it is the rows
+    // on a page: a page of 100 grows to fit, a page of 500 scrolls.
     const [rowsShowing, setRowsShowing] = useState(null);
-    const autoHeight = (rowsShowing ?? rowData.length) <= maxRowsWithoutScroll;
+    const rowsInView = paging
+        ? Math.min(rowsShowing ?? rowData.length, currentPageSize ?? pageSize)
+        : (rowsShowing ?? rowData.length);
+    const autoHeight = rowsInView <= maxRowsWithoutScroll;
 
     // AG Grid takes a moment to draw its first rows (longer with many wrapped rows to measure), so
     // until it has, the grid is hidden behind a progress bar rather than showing empty. A report
@@ -426,6 +453,11 @@ function ReportAGrid({
                     quickFilterText={quickFilterText}
                     domLayout={autoHeight ? 'autoHeight' : 'normal'}
                     onModelUpdated={onModelUpdated}
+                    pagination={paging}
+                    paginationPageSize={paging ? pageSize : undefined}
+                    paginationPageSizeSelector={pageSizeSelector}
+                    onPaginationChanged={paging ? onPaginationChanged : undefined}
+                    onFilterChanged={paging ? onFilterChanged : undefined}
                     onFirstDataRendered={onFirstDataRendered}
                     suppressColumnVirtualisation
                     enableCellTextSelection

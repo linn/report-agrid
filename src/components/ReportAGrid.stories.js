@@ -35,7 +35,8 @@ export default {
         fixedRowHeight: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
-        height: '100vh'
+        height: '100vh',
+        pageSize: undefined
     }
 };
 
@@ -130,6 +131,16 @@ export const GrowsToFit200Rows = {
         maxRowsWithoutScroll: 250,
         fixedRowHeight: true,
         showRowCount: true
+    }
+};
+
+export const Paged = {
+    name: 'Paged (2,000 rows, 100 to a page, with a page size selector)',
+    args: {
+        report: makeLargeReport(2000),
+        pageSize: 100,
+        showExport: true,
+        fixedRowHeight: true
     }
 };
 
