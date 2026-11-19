@@ -1,188 +1,30 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import {
-    AlignedGridsModule,
-    CellStyleModule,
-    ClientSideRowModelModule,
-    CsvExportModule,
-    DateFilterModule,
-    NumberFilterModule,
-    PaginationModule,
-    PinnedRowModule,
-    QuickFilterModule,
-    RenderApiModule,
-    RowApiModule,
-    RowAutoHeightModule,
-    RowStyleModule,
-    TextFilterModule,
-    TooltipModule,
-    themeQuartz
-} from 'ag-grid-community';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import InputBase from '@mui/material/InputBase';
 import LinearProgress from '@mui/material/LinearProgress';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { alpha, keyframes, useTheme } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import { alpha, useTheme } from '@mui/material/styles';
 
-// Registered per grid (the `modules` prop) rather than globally, so this component doesn't
-// change any other AG Grid an app might have.
-const modules = [
-    ClientSideRowModelModule,
-    AlignedGridsModule,
-    CellStyleModule,
-    CsvExportModule,
-    DateFilterModule,
-    NumberFilterModule,
-    PaginationModule,
-    PinnedRowModule,
-    QuickFilterModule,
-    RenderApiModule,
-    RowApiModule,
-    RowAutoHeightModule,
-    RowStyleModule,
-    TextFilterModule,
-    TooltipModule
-];
-
-// Material's icons, inline: @mui/icons-material isn't a dependency
-const icon = d =>
-    function Icon({ className }) {
-        return (
-            <svg
-                className={className}
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden
-            >
-                <path d={d} />
-            </svg>
-        );
-    };
-const OpenInNewIcon = icon(
-    'M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z'
-);
-const LinkIcon = icon(
-    'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5'
-);
-const DownloadIcon = icon('M19 9h-4V3H9v6H5l7 7zM5 18v2h14v-2z');
-const SearchIcon = icon(
-    'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14'
-);
-const CloseIcon = icon(
-    'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'
-);
-const PrintIcon = icon(
-    'M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3m-3 11H8v-5h8zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1m-1-9H6v4h12z'
-);
-
-// a cell's left and right padding in px; the row count lines up with the text in the first column
-const cellPadding = 8;
+import {
+    buildColumnDefs,
+    buildRow,
+    buildTotalsRow,
+    cellPadding,
+    getRowClass,
+    gridStyles,
+    gridTheme,
+    modules
+} from './gridParts.js';
+import {
+    DownloadIcon,
+    LinkIcon,
+    OpenInNewIcon,
+    PrintIcon,
+    Search,
+    ToolButton
+} from './GridTools.js';
 
 const defaultPageSizeOptions = [25, 50, 100, 250, 500];
-
-const isZero = v => v === 0 || v === '0';
-
-const attributeValue = (attributes, type) =>
-    attributes?.find(a => a.attributeType === type)?.attributeValue;
-
-function DrillDownCell({ value, valueFormatted, data, colDef, context }) {
-    const text = valueFormatted ?? value;
-    const drillDown = data?.[`${colDef.field}DrillDown`];
-    if (!drillDown?.url) {
-        return text;
-    }
-
-    const { openLinksInNewTabs } = context;
-    const linkProps = {
-        target: openLinksInNewTabs ? '_blank' : '',
-        rel: openLinksInNewTabs ? 'noopener noreferrer' : '',
-        // a drill-down link takes its cell's colour, not the browser's link colour
-        style: { color: attributeValue(data[`${colDef.field}Attributes`], 'text-colour') }
-    };
-
-    return drillDown.external ? (
-        <a href={drillDown.url} {...linkProps}>
-            {text}
-        </a>
-    ) : (
-        <Link to={drillDown.url} {...linkProps}>
-            {text}
-        </Link>
-    );
-}
-
-// quiet, so they don't compete with the report: no box, small, in the secondary text colour
-const toolStyle = theme => ({ fontSize: theme.typography.body2.fontSize, color: 'text.secondary' });
-
-function ToolButton({ label, Icon, onClick }) {
-    return (
-        <Tooltip title={label}>
-            <IconButton size="small" aria-label={label} onClick={onClick} sx={toolStyle}>
-                <Icon />
-            </IconButton>
-        </Tooltip>
-    );
-}
-
-const searchWidth = 180;
-const openSearch = keyframes`from { width: 32px; } to { width: ${searchWidth}px; }`;
-
-// A search icon that opens into a box. The box closes again when you leave it empty, stays open
-// while it has text (so a search can't hide rows out of sight), and Escape or × clears and closes it.
-function Search({ value, onChange }) {
-    const [open, setOpen] = useState(false);
-
-    if (!open && !value) {
-        return <ToolButton label="Search" Icon={SearchIcon} onClick={() => setOpen(true)} />;
-    }
-
-    const clearAndClose = () => {
-        onChange('');
-        setOpen(false);
-    };
-
-    return (
-        <InputBase
-            autoFocus
-            placeholder="Search…"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            onBlur={() => !value && setOpen(false)}
-            onKeyDown={e => e.key === 'Escape' && clearAndClose()}
-            inputProps={{ 'aria-label': 'Search' }}
-            startAdornment={
-                <Box component="span" sx={{ display: 'flex', mr: 0.5 }}>
-                    <SearchIcon />
-                </Box>
-            }
-            endAdornment={
-                value && (
-                    <IconButton
-                        size="small"
-                        aria-label="Clear search"
-                        onClick={clearAndClose}
-                        sx={{ p: 0.25, color: 'inherit' }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                )
-            }
-            sx={theme => ({
-                ...toolStyle(theme),
-                width: searchWidth,
-                animation: `${openSearch} .15s ease-out`,
-                borderBottom: 1,
-                borderColor: 'divider',
-                '&.Mui-focused': { borderColor: 'primary.main' }
-            })}
-        />
-    );
-}
 
 function ReportAGrid({
     report,
@@ -220,161 +62,22 @@ function ReportAGrid({
     const gridRef = outerGridRef ?? innerGridRef;
     const [quickFilterText, setQuickFilterText] = useState('');
 
-    const theme = useMemo(
-        () =>
-            themeQuartz.withParams({
-                fontFamily: muiTheme.typography.fontFamily,
-                fontSize: muiTheme.typography.body2.fontSize,
-                headerFontWeight: muiTheme.typography.fontWeightMedium,
-                foregroundColor: muiTheme.palette.text.primary,
-                backgroundColor: muiTheme.palette.background.paper,
-                accentColor: muiTheme.palette.primary.main,
-                borderColor: muiTheme.palette.divider,
-                wrapperBorderRadius: muiTheme.shape.borderRadius,
-                // compact, like ReportDataGrid's density="compact"
-                spacing: 4,
-                cellHorizontalPadding: cellPadding,
-                rowHeight: fixedRowHeight ? 30 : undefined,
-                // AG Grid keeps a short grid's rows area at least 150px tall, which left a gap above
-                // the pinned totals row; one row's height still has room for "No Rows To Show".
-                autoHeightMinBodyHeight: 30
-            }),
-        [muiTheme, fixedRowHeight]
-    );
+    const theme = useMemo(() => gridTheme(muiTheme, fixedRowHeight), [muiTheme, fixedRowHeight]);
 
     const columnDefs = useMemo(
-        () =>
-            report.headers.dataGridColumnSpecifications.map((spec, i) => {
-                const field = spec.columnId;
-                const isDate = spec.columnType === 'date';
-                const isNumber = spec.columnType === 'number';
-                const alignClass = spec.align ? `align-${spec.align}` : '';
-
-                return {
-                    field,
-                    headerName: report.headers.columnHeaders[i],
-                    // shown only when the header is cut off (tooltipShowMode)
-                    headerTooltip: report.headers.columnHeaders[i],
-                    pinned: i < pinnedColumns ? 'left' : undefined,
-                    width: spec.columnWidth,
-                    headerClass: alignClass,
-                    cellClass: [
-                        alignClass,
-                        report.headers.totalColumns?.includes(i) && 'totalColumn'
-                    ]
-                        .filter(Boolean)
-                        .join(' '),
-                    cellStyle: params => {
-                        const attributes = params.data?.[`${field}Attributes`];
-                        return {
-                            backgroundColor: attributeValue(attributes, 'background-colour'),
-                            color: attributeValue(attributes, 'text-colour')
-                        };
-                    },
-                    wrapText: !fixedRowHeight,
-                    autoHeight: !fixedRowHeight,
-                    tooltipValueGetter: fixedRowHeight
-                        ? p => p.valueFormatted ?? p.value
-                        : undefined,
-                    cellRenderer: DrillDownCell,
-                    filter:
-                        (isDate && 'agDateColumnFilter') ||
-                        (isNumber && 'agNumberColumnFilter') ||
-                        'agTextColumnFilter',
-                    // Date columns sort and filter on the backend's ISO sort value while showing its
-                    // formatted string.
-                    ...(isDate && {
-                        valueGetter: p => {
-                            const sortValue = p.data?.[`${field}SortValue`];
-                            return sortValue ? new Date(sortValue) : null;
-                        },
-                        valueFormatter: p => p.data?.[field],
-                        getQuickFilterText: p => p.data?.[field],
-                        // CSV gets what's on screen, not the Date
-                        useValueFormatterForExport: true
-                    }),
-                    ...(isNumber && {
-                        valueFormatter: p => {
-                            if (p.value || isZero(p.value)) {
-                                const { decimalPlaces } = spec;
-                                return Intl.NumberFormat('en-GB', {
-                                    minimumFractionDigits: decimalPlaces ?? 2,
-                                    maximumFractionDigits: decimalPlaces ?? 99
-                                }).format(p.value);
-                            }
-                            return p.value;
-                        },
-                        // CSV keeps raw numbers (no thousands separators) so spreadsheets read them
-                        useValueFormatterForExport: false
-                    })
-                };
-            }),
+        () => buildColumnDefs(report, { fixedRowHeight, pinnedColumns }),
         [report, fixedRowHeight, pinnedColumns]
     );
 
     const rowData = useMemo(
-        () =>
-            report.results.map(r =>
-                report.headers.dataGridColumnSpecifications.reduce(
-                    (acc, spec, i) => {
-                        const field = spec.columnId;
-                        const value = r.values[i];
-                        let val = value?.textDisplayValue ?? value?.displayValue;
-                        if (isZero(val) && !renderZeroes) {
-                            val = '';
-                        }
-                        acc[field] = val;
-
-                        if (value?.sortValue) {
-                            acc[`${field}SortValue`] = value.sortValue;
-                        }
-
-                        if (value?.drillDowns?.length) {
-                            acc[`${field}DrillDown`] = {
-                                url: value.drillDowns[0].href,
-                                external: value.drillDowns[0].externalLink
-                            };
-                        }
-
-                        if (value?.attributes?.length) {
-                            acc[`${field}Attributes`] = value.attributes;
-                        }
-
-                        return acc;
-                    },
-                    { rowType: r.rowType }
-                )
-            ),
+        () => report.results.map(r => buildRow(report, r, renderZeroes)),
         [report, renderZeroes]
     );
 
     // The totals row is pinned to the bottom, so it stays in view and isn't moved by sorting.
-    const pinnedBottomRowData = useMemo(() => {
-        if (!showTotals || !report.totals) {
-            return undefined;
-        }
-
-        return [
-            report.headers.dataGridColumnSpecifications.reduce(
-                (acc, spec, i) => {
-                    let totalVal = report.totals.values[i]?.displayValue;
-                    if (isZero(totalVal) && !renderZeroes) {
-                        totalVal = '';
-                    }
-                    acc[spec.columnId] = totalVal;
-                    return acc;
-                },
-                { rowType: 'Total' }
-            )
-        ];
-    }, [report, showTotals, renderZeroes]);
-
-    const getRowClass = useCallback(
-        params =>
-            params.data?.rowType === 'Subtotal' || params.data?.rowType === 'Total'
-                ? 'totalLine'
-                : undefined,
-        []
+    const pinnedBottomRowData = useMemo(
+        () => (showTotals && report.totals ? [buildTotalsRow(report, renderZeroes)] : undefined),
+        [report, showTotals, renderZeroes]
     );
 
     const exportCsv = () =>
@@ -529,28 +232,9 @@ function ReportAGrid({
                     position: 'relative',
                     ...(autoHeight || printing ? {} : { height }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
-                    // Filter icons only on the header you're pointing at, or one with a filter
-                    // set. (AG Grid's suppressMenuHide doesn't cover Community's filter button.)
-                    // Devices that can't hover keep them showing.
-                    '@media (hover: hover)': {
-                        '& .ag-header-cell-filter-button': { transition: 'opacity .2s' },
-                        '& .ag-header-cell:not(.ag-header-cell-filtered):not(:hover):not(:focus-within) .ag-header-cell-filter-button':
-                            { opacity: 0 }
-                    },
+                    ...gridStyles,
                     // no header at all, not even its border
-                    ...(showHeader ? {} : { '& .ag-header': { display: 'none' } }),
-                    '& .totalLine': { fontWeight: 'bolder' },
-                    '& .totalColumn': { fontWeight: 'bold' },
-                    '& .align-right': { textAlign: 'right' },
-                    '& .align-center': { textAlign: 'center' },
-                    '& .ag-header-cell.align-right .ag-header-cell-label': {
-                        flexDirection: 'row-reverse'
-                    },
-                    '& .ag-header-cell.align-center .ag-header-cell-label': {
-                        justifyContent: 'center'
-                    },
-                    // wrapped rows read better with a little more line height
-                    '& .ag-cell-wrap-text': { lineHeight: 1.5, py: '4px', wordBreak: 'break-word' }
+                    ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}
             >
                 {!ready && (
