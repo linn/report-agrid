@@ -145,6 +145,37 @@ describe('CombinedReportAGrids', () => {
         expect(document.querySelectorAll('.ag-header-cell-sortable').length).toBe(2);
     });
 
+    test('headings can neither sort nor filter, with sortable and filterable off', async () => {
+        renderCombined({ sortable: false, filterable: false });
+        await screen.findByText('J-THREE');
+
+        expect(document.querySelectorAll('.ag-header-cell-filter-button')).toHaveLength(0);
+        expect(document.querySelectorAll('.ag-header-cell-sortable')).toHaveLength(0);
+    });
+
+    test('sorting and filtering can be turned off separately', async () => {
+        const { unmount } = renderCombined({ sortable: false });
+        await screen.findByText('J-THREE');
+        expect(document.querySelectorAll('.ag-header-cell-sortable')).toHaveLength(0);
+        expect(document.querySelectorAll('.ag-header-cell-filter-button')).toHaveLength(2);
+        unmount();
+
+        renderCombined({ filterable: false });
+        await screen.findByText('J-THREE');
+        expect(document.querySelectorAll('.ag-header-cell-sortable')).toHaveLength(2);
+        expect(document.querySelectorAll('.ag-header-cell-filter-button')).toHaveLength(0);
+    });
+
+    test('the search still keeps titles with their matches with sorting and filtering off', async () => {
+        renderCombined({ sortable: false, filterable: false });
+        await screen.findByText('J-THREE');
+
+        await searchFor('j-three');
+
+        await waitFor(() => expect(screen.queryByText('J-ONE')).not.toBeInTheDocument());
+        expect(screen.getAllByText('9002 - ANOTHER MADE UP').length).toBeGreaterThan(0);
+    });
+
     test('shows a moving loading bar until the rows are drawn', async () => {
         renderCombined();
 

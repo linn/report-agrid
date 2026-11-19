@@ -122,8 +122,14 @@ export const buildColumnDefs = (report, { fixedRowHeight, pinnedColumns }) =>
             },
             wrapText: wraps,
             autoHeight: wraps,
-            // a cell that doesn't wrap shows its full text in a tooltip when it's cut off
-            tooltipValueGetter: wraps ? undefined : p => p.valueFormatted ?? p.value,
+            // Only text kept to one line (fixedRowHeight) has a tooltip, to read a long description
+            // that's cut off. Numbers and dates rarely are, and wrapped text never is. AG Grid only
+            // checks whether a cell's text is cut off for cells it draws itself, so a tooltip on
+            // every cell showed on every cell.
+            tooltipValueGetter:
+                fixedRowHeight && !isNumber && !isDate
+                    ? p => p.valueFormatted ?? p.value
+                    : undefined,
             cellRendererSelector: drillDownRendererFor(field),
             filter:
                 (isDate && 'agDateColumnFilter') ||

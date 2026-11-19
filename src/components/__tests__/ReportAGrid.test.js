@@ -196,6 +196,40 @@ describe('ReportAGrid drill-downs', () => {
     });
 });
 
+describe('ReportAGrid cell tooltips', () => {
+    // whether a column's cells have a tooltip, from the grid's own column definitions
+    const hasTooltip = async (props, columnId) => {
+        const gridRef = { current: null };
+        render(<ReportAGrid report={makeReport([])} gridRef={gridRef} {...props} />);
+        await screen.findByText('Widget');
+        return !!gridRef.current.api.getColumnDef(columnId).tooltipValueGetter;
+    };
+
+    test('text kept to one line has a tooltip, to read it when cut off', async () => {
+        expect(await hasTooltip({ fixedRowHeight: true }, 'product')).toBe(true);
+    });
+
+    test('wrapped text has no tooltip', async () => {
+        expect(await hasTooltip({}, 'product')).toBe(false);
+    });
+
+    test('numbers have no tooltip, wrapped or not', async () => {
+        expect(await hasTooltip({}, 'amount')).toBe(false);
+    });
+
+    test('numbers on one line have no tooltip either', async () => {
+        expect(await hasTooltip({ fixedRowHeight: true }, 'amount')).toBe(false);
+    });
+
+    test('column headers still have their tooltips', async () => {
+        const gridRef = { current: null };
+        render(<ReportAGrid report={makeReport([])} gridRef={gridRef} />);
+        await screen.findByText('Widget');
+
+        expect(gridRef.current.api.getColumnDef('amount').headerTooltip).toBe('Amount');
+    });
+});
+
 describe('ReportAGrid drawing cells cheaply', () => {
     test('only text wraps: number cells never grow a row', async () => {
         render(<ReportAGrid report={makeReport([])} />);

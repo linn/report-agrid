@@ -52,8 +52,10 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   the rows in view) and leaves the search and buttons off the printout.
 - `showRowCount` shows the rows left by the search and filters too: "Number of rows: 45 of 2,000".
 - `pinnedColumns={n}` keeps the report's first n columns in view when scrolling sideways.
-- A column header that is cut off shows its full text in a tooltip, as does a cut-off cell that
-  doesn't wrap: every cell with `fixedRowHeight`, and number and date cells always.
+- A column header that is cut off shows its full text in a tooltip. With `fixedRowHeight`, so does a
+  text cell, to read a long description that's cut off; number and date cells, and wrapped text,
+  have none. (A text cell's tooltip may show even when nothing is cut off: AG Grid only checks for
+  cells it draws itself.)
 - Only text wraps onto more lines: number and date cells stay on one, so they never make a row taller.
 - `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and
   below, so they're ready before they scroll in.
@@ -96,7 +98,10 @@ import { CombinedReportAGrids } from '@linn-it/report-agrid';
   with its matching rows. `showExport={false}` takes both away; `showSearch` (following
   `showExport` unless given) keeps or drops the search on its own.
 - Column headings sort and filter every row in the grid, titles and blank rows included, so those
-  can move or drop out while a sort or filter is on.
+  can move or drop out while a sort or filter is on. Where a row doesn't say which report it's from
+  (an opening balance with only a description and an amount, say), that leaves it unidentifiable, so
+  `sortable={false}` and `filterable={false}` turn them off; the search still keeps each title with
+  its matching rows.
 - `height` is `"fill"` by default: the window less `fillOffset` (default 155px, room for the bar),
   at least `minFillHeight`.
 - Not here, as they're one report's: per-report search, export and print, paging, the row count and
@@ -104,7 +109,8 @@ import { CombinedReportAGrids } from '@linn-it/report-agrid';
 
 Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLinksInNewTabs`,
 `fixedRowHeight`, `showExport`, `showSearch`, `exportFileName`, `height`, `fillOffset`,
-`minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight` and `spacerRowHeight`.
+`minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight`, `spacerRowHeight`, `sortable` and
+`filterable`.
 
 ### Which to use
 
