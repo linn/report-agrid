@@ -1,4 +1,15 @@
 # Changelog
+## [0.2.0] - 2026-11-19
+- Long reports draw and scroll faster, with the same look:
+  - A cell is only drawn by React when it has a drill-down link; every other cell is plain text drawn by AG Grid.
+  - Each number column's format is made once, not for every cell.
+  - Only text wraps: number and date cells stay on one line, so AG Grid no longer measures them to size a row. A number or date cut off by a narrow column now shows its full value in a tooltip.
+  - A cell with no colours of its own gets no inline style.
+  - With fixedRowHeight, columns out of view sideways are drawn as they scroll in (with wrapped rows every column is still drawn, as AG Grid measures row heights from the cells it has drawn).
+- rowBuffer on ReportAGrid and ReportAGrids (default 10, AG Grid's own): how many rows are drawn beyond those in view, above and below.
+- height now defaults to "fill" rather than 100vh: a grid with more than maxRowsWithoutScroll rows is as tall as the window less fillOffset (default 203px, room for its title), never under minFillHeight (default 400px), so its title, column headings and last row are all on screen at once. Before, a 100vh grid plus its title was taller than the window. Any CSS height still works as before.
+- The loading bar keeps moving while the grid draws its rows. MUI's LinearProgress is animated on the same thread AG Grid draws on, so it crawled just when it showed; the new bar moves by transform, which the browser animates on its own, and sweeps once a second.
+- Switching fixedRowHeight on a grid already drawn makes a new grid, as AG Grid only reads whether to draw columns out of view when a grid is made.
 ## [0.1.4] - 2026-11-19
 - Internal: ReportAGrid is split into smaller files, with no change in behaviour or API. How a report becomes a grid (modules, theme, columns, rows, styles) is in gridParts.js, the title tools and icons (search, export, print) in GridTools.js, and the drill-down link cell in DrillDownCell.js, so a grid that draws many reports at once can share them. None of these are exported from the package.
 ## [0.1.3] - 2026-11-19

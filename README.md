@@ -30,10 +30,14 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
 
 - No paging by default: every row in one list. Up to `maxRowsWithoutScroll` rows showing (default 100) the grid
   grows to fit them, with no scrollbar of its own, and the page scrolls. With more it is `height` tall
-  (default `100vh`) and scrolls itself, drawing only the rows in view, which keeps thousands of rows
+  and scrolls itself, drawing only the rows in view, which keeps thousands of rows
   fast. It goes by the rows showing after search and filters, so a big report searched down to a few
   rows shrinks to fit them. `maxRowsWithoutScroll={Infinity}` always grows to fit (every row is
   drawn, so keep it for reports of hundreds of rows, not thousands).
+- `height` defaults to `"fill"`: as tall as the window less `fillOffset` (default 203px, room for the
+  report's title above the grid), so the title, the column headings and the last row are all on
+  screen at once, but never under `minFillHeight` (default 400px). It follows the window as it's
+  resized. Any CSS height (`"600px"`, `"100vh"`) is used as it is.
 - Paging is there if you want it: `pageSize={100}` pages the report 100 rows at a time, with a page size
   selector of `pageSizeOptions` (default 25, 50, 100, 250, 500; `pageSize` is added if it isn't one).
   Search and filters cover every row and go back to page 1; Export CSV exports every row, not just the
@@ -48,15 +52,19 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   the rows in view) and leaves the search and buttons off the printout.
 - `showRowCount` shows the rows left by the search and filters too: "Number of rows: 45 of 2,000".
 - `pinnedColumns={n}` keeps the report's first n columns in view when scrolling sideways.
-- A column header that is cut off shows its full text in a tooltip, as does a cut-off cell with
-  `fixedRowHeight`.
+- A column header that is cut off shows its full text in a tooltip, as does a cut-off cell that
+  doesn't wrap: every cell with `fixedRowHeight`, and number and date cells always.
+- Only text wraps onto more lines: number and date cells stay on one, so they never make a row taller.
+- `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and
+  below, so they're ready before they scroll in.
 - Every column can be filtered from its header: dates as dates, numbers as numbers.
 - `ReportAGrids` with `repeatHeaders={false}` keeps every report's columns in step with the first, so
   resizing a column or scrolling sideways moves them all.
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
-Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `pageSize`,
-`pageSizeOptions`, `pinnedColumns`, `showSearch` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
+Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `fillOffset`,
+`minFillHeight`, `pageSize`,
+`pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
 `ReportAGrids`).
 
 ## Development

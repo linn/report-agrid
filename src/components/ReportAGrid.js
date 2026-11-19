@@ -1,19 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import BusyBar from './BusyBar.js';
 import {
     buildColumnDefs,
     buildRow,
     buildTotalsRow,
     cellPadding,
+    defaultMinFillHeight,
+    defaultReportFillOffset,
     getRowClass,
     gridStyles,
     gridTheme,
-    modules
+    modules,
+    resolveHeight
 } from './gridParts.js';
 import {
     DownloadIcon,
@@ -45,13 +48,20 @@ function ReportAGrid({
     // scrollbar of its own: the page scrolls. More, and it is `height` tall and scrolls itself,
     // drawing only the rows in view, which keeps thousands of rows fast. Infinity: always grow.
     maxRowsWithoutScroll = 100,
-    height = '100vh',
+    // 'fill': as tall as the window less fillOffset (room for the title above), at least
+    // minFillHeight; or any CSS height
+    height = 'fill',
+    fillOffset = defaultReportFillOffset,
+    minFillHeight = defaultMinFillHeight,
     // Off by default: every row in one list. A number pages the report that many rows at a time,
     // with a selector of pageSizeOptions (pageSize is added to them if it isn't one).
     pageSize,
     pageSizeOptions = defaultPageSizeOptions,
     // this many of the report's first columns stay in view when scrolling sideways
     pinnedColumns = 0,
+    // rows drawn beyond those in view, above and below, so they're ready before they scroll in
+    // (AG Grid's default)
+    rowBuffer = 10,
     // a ref given the AgGridReact, for its api (ReportAGrids uses it to align its grids)
     gridRef: outerGridRef,
     // AG Grid's alignedGrids: other grids whose column widths and scroll this one keeps in step with
@@ -230,20 +240,20 @@ function ReportAGrid({
             <Box
                 sx={{
                     position: 'relative',
-                    ...(autoHeight || printing ? {} : { height }),
+                    ...(autoHeight || printing
+                        ? {}
+                        : { height: resolveHeight(height, fillOffset, minFillHeight) }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
                     ...gridStyles,
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}
             >
-                {!ready && (
-                    <LinearProgress
-                        aria-label="Loading"
-                        sx={{ position: 'absolute', top: 0, left: 0, right: 0 }}
-                    />
-                )}
+                {!ready && <BusyBar sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />}
                 <AgGridReact
+                    // suppressColumnVirtualisation is only read when a grid is made, so switching
+                    // between fixed and wrapped rows makes a new one
+                    key={fixedRowHeight ? 'fixed' : 'wrapped'}
                     ref={gridRef}
                     modules={modules}
                     alignedGrids={alignedGrids}
@@ -263,8 +273,13 @@ function ReportAGrid({
                     onPaginationChanged={paging ? onPaginationChanged : undefined}
                     onFilterChanged={paging ? onFilterChanged : undefined}
                     onFirstDataRendered={onFirstDataRendered}
-                    suppressColumnVirtualisation
+                    // Wrapped rows are measured from the cells drawn, so every column is drawn;
+                    // with fixed rows, columns out of view sideways are drawn as they come in.
+                    suppressColumnVirtualisation={!fixedRowHeight}
+                    rowBuffer={rowBuffer}
                     enableCellTextSelection
+                    // rows in the page in the order shown, so text selected across rows copies in
+                    // that order (and screen readers and tests read it so)
                     ensureDomOrder
                     tooltipShowDelay={300}
                     tooltipShowMode="whenTruncated"
