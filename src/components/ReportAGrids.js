@@ -9,6 +9,7 @@ function ReportAGrids({
     titlesVariant = 'h6',
     repeatHeaders = true,
     perReportExport = false,
+    showSearch = perReportExport,
     showPrint = false,
     openLinksInNewTabs = true,
     showTotals = false,
@@ -34,6 +35,7 @@ function ReportAGrids({
                     key={d.title.displayString}
                     report={d}
                     showExport={perReportExport}
+                    showSearch={showSearch}
                     showPrint={showPrint}
                     showTotals={showTotals}
                     fixedRowHeight={fixedRowHeight}

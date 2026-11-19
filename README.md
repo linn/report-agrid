@@ -40,9 +40,12 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   page; the totals row shows on every page and is the whole report's. A page that fits within
   `maxRowsWithoutScroll` grows to fit; a bigger one is `height` tall and scrolls.
 - The totals row is pinned to the bottom: always in view, and not moved by sorting.
-- `showExport` gives a search box and an Export CSV icon button (no column chooser; AG Grid's Excel
-  export is in its paid edition). `showPrint` gives a Print icon button, which prints every row (all
-  pages, not just the rows in view) and leaves the search and buttons off the printout.
+- `showExport` gives an Export CSV icon button (no column chooser; AG Grid's Excel export is in its
+  paid edition) and, unless `showSearch={false}`, a search. `showSearch` on its own gives the search
+  without export. The search is an icon that opens into a box when clicked: it closes again when left
+  empty, stays open while it has text, and Escape or × clears it.
+- `showPrint` (off by default) gives a Print icon button, which prints every row (all pages, not just
+  the rows in view) and leaves the search and buttons off the printout.
 - `showRowCount` shows the rows left by the search and filters too: "Number of rows: 45 of 2,000".
 - `pinnedColumns={n}` keeps the report's first n columns in view when scrolling sideways.
 - A column header that is cut off shows its full text in a tooltip, as does a cut-off cell with
@@ -53,7 +56,7 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
 Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `pageSize`,
-`pageSizeOptions`, `pinnedColumns` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
+`pageSizeOptions`, `pinnedColumns`, `showSearch` and `showPrint`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by
 `ReportAGrids`).
 
 ## Development

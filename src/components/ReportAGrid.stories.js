@@ -31,6 +31,8 @@ export default {
         renderZeroes: false,
         showHeader: true,
         showExport: false,
+        // left out, so it follows showExport as it does in an app
+        showSearch: undefined,
         showPrint: false,
         showTotals: false,
         openLinksInNewTabs: true,
@@ -143,6 +145,16 @@ export const Paged = {
         report: makeLargeReport(2000),
         pageSize: 100,
         showExport: true,
+        fixedRowHeight: true
+    }
+};
+
+export const SearchOnly = {
+    name: 'Search only (showSearch without showExport): an icon until clicked',
+    args: {
+        report: makeLargeReport(300),
+        showSearch: true,
+        showRowCount: true,
         fixedRowHeight: true
     }
 };

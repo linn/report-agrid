@@ -37,6 +37,12 @@ const makeReport = (totalColumns, results) => ({
     totals: { values: [{ displayValue: '' }, { displayValue: 12.5 }] }
 });
 
+// the search is an icon until clicked
+const searchFor = async text => {
+    await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), text);
+};
+
 const row = (id, rowType, product, amount) => ({
     rowTitle: { displayString: id },
     rowType,
@@ -200,7 +206,7 @@ describe('ReportAGrid with many rows', () => {
         expect(screen.getByText('Number of rows: 2,000')).toBeInTheDocument();
 
         // Product 199, 1199 and 1990 to 1999
-        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 199');
+        await searchFor('Product 199');
         expect(await screen.findByText('Number of rows: 12 of 2,000')).toBeInTheDocument();
 
         await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
@@ -220,7 +226,7 @@ describe('ReportAGrid with many rows', () => {
         expect(screen.getByText('Number of rows: 250')).toBeInTheDocument();
 
         // Product 24, 124, 224 and 240 to 249: 13 rows, more than the page of 5
-        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 24');
+        await searchFor('Product 24');
         expect(await screen.findByText('Number of rows: 13 of 250')).toBeInTheDocument();
     });
 
@@ -229,7 +235,7 @@ describe('ReportAGrid with many rows', () => {
         render(<ReportAGrid report={makeReport([], manyRows(8))} showExport />);
         await screen.findByText('Product 3');
 
-        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 3');
+        await searchFor('Product 3');
 
         await waitFor(() => expect(screen.queryByText('Product 2')).not.toBeInTheDocument());
         expect(screen.getByText('Product 3')).toBeInTheDocument();
@@ -265,7 +271,7 @@ describe('ReportAGrid height', () => {
         await waitFor(() => expect(layout()).toBe('scrolls'));
 
         // Product 49 and Product 490 to 499
-        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 49');
+        await searchFor('Product 49');
         await waitFor(() => expect(layout()).toBe('grows to fit'));
 
         await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
@@ -341,7 +347,7 @@ describe('ReportAGrid paging', () => {
         await screen.findByText('Product 5');
 
         // Product 1, 10 to 19 and 21: 12 rows
-        await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'Product 1');
+        await searchFor('Product 1');
         await waitFor(() => expect(summary()).toBe('1 to 5 of 12'));
         expect(screen.getByText('Product 1')).toBeInTheDocument();
     });
@@ -392,6 +398,65 @@ describe('ReportAGrid toolbar', () => {
             cellOf(screen.getByText('Widget')).closest('.ag-grid-pinned-left-cells')
         ).not.toBeNull();
         expect(cellOf(screen.getByText('12.50')).closest('.ag-grid-pinned-left-cells')).toBeNull();
+    });
+});
+
+describe('ReportAGrid search', () => {
+    const search = () => screen.queryByRole('textbox', { name: 'Search' });
+    const rows = () =>
+        Array.from({ length: 8 }, (_, i) => row(`r${i}`, 'Normal', `Product ${i}`, i));
+
+    test('comes with Export CSV, as a search icon until clicked', async () => {
+        render(<ReportAGrid report={makeReport([], rows())} showExport />);
+        await screen.findByText('Product 0');
+        expect(search()).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+        expect(search()).toHaveFocus();
+    });
+
+    test('can be shown without Export CSV, or hidden with it', async () => {
+        const { unmount } = render(<ReportAGrid report={makeReport([], rows())} showSearch />);
+        await screen.findByText('Product 0');
+        expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
+        unmount();
+
+        render(<ReportAGrid report={makeReport([], rows())} showExport showSearch={false} />);
+        await screen.findByText('Product 0');
+        expect(screen.queryByRole('button', { name: 'Search' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument();
+    });
+
+    test('closes when left empty, stays open while it has text', async () => {
+        render(<ReportAGrid report={makeReport([], rows())} showSearch />);
+        await screen.findByText('Product 0');
+
+        await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+        await userEvent.tab();
+        expect(search()).not.toBeInTheDocument();
+
+        await searchFor('Product 3');
+        await userEvent.click(document.body);
+        expect(search()).toHaveValue('Product 3');
+        await waitFor(() => expect(screen.queryByText('Product 2')).not.toBeInTheDocument());
+    });
+
+    test('Escape or × clears it and closes it', async () => {
+        render(<ReportAGrid report={makeReport([], rows())} showSearch />);
+        await screen.findByText('Product 0');
+
+        await searchFor('Product 3');
+        await waitFor(() => expect(screen.queryByText('Product 2')).not.toBeInTheDocument());
+        await userEvent.keyboard('{Escape}');
+        expect(search()).not.toBeInTheDocument();
+        expect(await screen.findByText('Product 2')).toBeInTheDocument();
+
+        await searchFor('Product 3');
+        await waitFor(() => expect(screen.queryByText('Product 2')).not.toBeInTheDocument());
+        await userEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+        expect(search()).not.toBeInTheDocument();
+        expect(await screen.findByText('Product 2')).toBeInTheDocument();
     });
 });
 
