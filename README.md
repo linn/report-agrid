@@ -52,8 +52,10 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   the rows in view) and leaves the search and buttons off the printout.
 - `showRowCount` shows the rows left by the search and filters too: "Number of rows: 45 of 2,000".
 - `pinnedColumns={n}` keeps the report's first n columns in view when scrolling sideways.
-- A column header that is cut off shows its full text in a tooltip, as does a cut-off cell that
-  doesn't wrap: every cell with `fixedRowHeight`, and number and date cells always.
+- A column header that is cut off shows its full text in a tooltip. With `fixedRowHeight`, so does a
+  text cell, to read a long description that's cut off; number and date cells, and wrapped text,
+  have none. (A text cell's tooltip may show even when nothing is cut off: AG Grid only checks for
+  cells it draws itself.)
 - Only text wraps onto more lines: number and date cells stay on one, so they never make a row taller.
 - `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and
   below, so they're ready before they scroll in.
