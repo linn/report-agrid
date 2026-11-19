@@ -73,6 +73,45 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   - With `repeatHeaders={false}`, only the grids drawn at the time keep their columns in step.
 - The grid takes its font and colours from the MUI theme, but is not identical to the MUI DataGrid.
 
+### CombinedReportAGrids
+
+`CombinedReportAGrids` takes the same `reportData` as `ReportAGrids` (the "s": many reports), but draws
+them all as one grid: each report's title is a full-width row, then its rows, its totals (with
+`showTotals`) and a blank row before the next. As one grid, only the rows in view are ever drawn, so
+it stays quick however many reports or rows there are, and scrolls as one list under one set of
+column headings.
+
+```jsx
+import { CombinedReportAGrids } from '@linn-it/report-agrid';
+
+<CombinedReportAGrids reportData={reports} showExport />;
+```
+
+- The reports should share their columns, as a multi-report endpoint's do: the first report's are
+  used.
+- A bar above the grid names the report at the top of the view, so you know where you are once its
+  title row has scrolled away.
+- `showExport` exports the whole grid as one CSV, each title in the first column and a blank line
+  between reports. `showSearch` (following `showExport` unless given) searches every report, and
+  keeps each report's title and totals with its matching rows.
+- Column headings sort and filter every row in the grid, titles and blank rows included, so those
+  can move or drop out while a sort or filter is on.
+- `height` is `"fill"` by default: the window less `fillOffset` (default 155px, room for the bar),
+  at least `minFillHeight`.
+- Not here, as they're one report's: per-report search, export and print, paging, the row count and
+  pinned totals rows.
+
+Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLinksInNewTabs`,
+`fixedRowHeight`, `showExport`, `showSearch`, `exportFileName`, `height`, `fillOffset`,
+`minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight` and `spacerRowHeight`.
+
+### Which to use
+
+- One report: `ReportAGrid`.
+- A few reports, or each wanting its own search, export or paging: `ReportAGrids`.
+- Many reports, such as one per account: `ReportAGrids` with `lazy` to keep a grid per report, or
+  `CombinedReportAGrids` for one list.
+
 Extra props on `ReportAGrid` and `ReportAGrids`: `maxRowsWithoutScroll`, `height`, `fillOffset`,
 `minFillHeight`, `pageSize`,
 `pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrids`
