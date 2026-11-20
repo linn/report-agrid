@@ -33,7 +33,10 @@ export default {
         )
     ],
     argTypes: {
-        density: { control: 'inline-radio', options: ['compact', 'dense', 'tight', 'tightest'] }
+        density: {
+            control: 'inline-radio',
+            options: ['comfortable', 'standard', 'tight', 'tightest']
+        }
     },
     args: {
         reportData,
@@ -42,7 +45,7 @@ export default {
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
-        density: 'dense',
+        density: 'standard',
         showDensityToggle: false,
         height: 'fill'
     }

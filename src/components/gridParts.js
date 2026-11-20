@@ -49,12 +49,12 @@ export const cellPadding = 8;
 
 // How tightly a grid is drawn (the density prop): its text size, and in px its fixed row height
 // (fixedRowHeight), column headings' row, AG Grid's spacing unit, a wrapped cell's top and bottom
-// padding and a cell's left and right padding. "compact" uses the app theme's body2 text. A wrapped
+// padding and a cell's left and right padding. "comfortable" uses the app theme's body2 text. A wrapped
 // row of one line is about as tall as a fixed row. "tight" and "tightest" are for an expert who
 // wants as many numbers on screen as can still be read; tightest's rows are striped, to follow one
 // across.
 export const densities = {
-    compact: {
+    comfortable: {
         fontSize: null,
         rowHeight: 30,
         headerHeight: 32,
@@ -62,7 +62,7 @@ export const densities = {
         wrapPadding: 5,
         cellPadding
     },
-    dense: {
+    standard: {
         fontSize: '13px',
         rowHeight: 26,
         headerHeight: 28,
@@ -88,7 +88,7 @@ export const densities = {
         striped: true
     }
 };
-export const defaultDensity = 'dense';
+export const defaultDensity = 'standard';
 export const densityOf = density => densities[density] ?? densities[defaultDensity];
 
 const isZero = v => v === 0 || v === '0';
@@ -114,7 +114,7 @@ export const gridTheme = (muiTheme, fixedRowHeight, density) => {
         accentColor: muiTheme.palette.primary.main,
         borderColor: muiTheme.palette.divider,
         wrapperBorderRadius: muiTheme.shape.borderRadius,
-        // even compact is tighter than ReportDataGrid's density="compact"
+        // even comfortable is tighter than ReportDataGrid's density="compact"
         spacing: d.spacing,
         cellHorizontalPadding: d.cellPadding,
         rowHeight: fixedRowHeight ? d.rowHeight : undefined,

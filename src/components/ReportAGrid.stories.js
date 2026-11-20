@@ -27,7 +27,10 @@ export default {
         )
     ],
     argTypes: {
-        density: { control: 'inline-radio', options: ['compact', 'dense', 'tight', 'tightest'] }
+        density: {
+            control: 'inline-radio',
+            options: ['comfortable', 'standard', 'tight', 'tightest']
+        }
     },
     args: {
         report: makeReport('Products Report', basicRows),
@@ -40,7 +43,7 @@ export default {
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
-        density: 'dense',
+        density: 'standard',
         showDensityToggle: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
@@ -222,9 +225,9 @@ export const LargeReportDensityToggle = {
     args: { ...LargeReport.args, showDensityToggle: true }
 };
 
-export const LargeReportCompact = {
-    name: 'Large report, compact (the old default)',
-    args: { ...LargeReport.args, density: 'compact' }
+export const LargeReportComfortable = {
+    name: 'Large report, comfortable',
+    args: { ...LargeReport.args, density: 'comfortable' }
 };
 
 export const LargeReportTightest = {

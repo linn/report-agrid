@@ -74,11 +74,11 @@ function CombinedReportAGrids({
     showTotals = false,
     openLinksInNewTabs = true,
     fixedRowHeight = false,
-    // "dense" (the default), "compact" (larger text, taller rows), "tight" (smaller) or "tightest"
+    // "standard" (the default), "comfortable" (larger text, taller rows), "tight" (smaller) or "tightest"
     // (smallest, striped)
     density = defaultDensity,
-    // a button by the search that steps through density, "tight" and "tightest", for an expert who
-    // wants more on screen; off by default
+    // a button by the search that steps through every density, starting from density, for each
+    // user to find the one that suits the report; off by default
     showDensityToggle = false,
     // Export CSV exports the whole grid, every report, with each title in the first column and a
     // blank line between reports. On by default, as on ReportAGrid.
@@ -269,7 +269,13 @@ function CombinedReportAGrids({
                     {currentTitle}
                 </Typography>
                 {showSearch && <Search value={searchText} onChange={setSearchText} />}
-                {showDensityToggle && <DensityToggle next={nextDensity} onClick={toNextDensity} />}
+                {showDensityToggle && (
+                    <DensityToggle
+                        shown={shownDensity}
+                        next={nextDensity}
+                        onClick={toNextDensity}
+                    />
+                )}
                 {showExport && (
                     <ToolButton label="Export CSV" Icon={DownloadIcon} onClick={exportCsv} />
                 )}

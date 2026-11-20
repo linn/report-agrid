@@ -112,14 +112,20 @@ export function Search({ value, onChange }) {
     );
 }
 
-// Steps a grid through its own density, "tight" and "tightest", for an expert who wants more on
-// screen. Its label says where it goes next.
-const densityLabels = { tight: 'Tight rows', tightest: 'Tightest rows' };
-export function DensityToggle({ next, onClick }) {
-    const tighter = next in densityLabels;
+// Steps a grid through the densities, for each user to find the one that suits the report. Its
+// label names the next one; its icon shows whether that is tighter or looser.
+const densityLabels = {
+    comfortable: 'Comfortable rows',
+    standard: 'Standard rows',
+    tight: 'Tight rows',
+    tightest: 'Tightest rows'
+};
+export function DensityToggle({ shown, next, onClick }) {
+    const order = Object.keys(densityLabels);
+    const tighter = order.indexOf(next) > order.indexOf(shown);
     return (
         <ToolButton
-            label={densityLabels[next] ?? 'Normal rows'}
+            label={densityLabels[next]}
             Icon={tighter ? DensitySmallIcon : DensityMediumIcon}
             onClick={onClick}
         />

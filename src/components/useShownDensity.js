@@ -2,14 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 
 import { defaultDensity } from './gridParts.js';
 
-// The densities the density toggle steps through, in order, from the one a grid was given: that
-// one, then "tight" and "tightest", then back. A grid given tight or tightest starts there in the
-// same cycle, with the default in place of its own density.
+// The densities the density toggle steps through, loosest to tightest and round again, starting
+// from the one a grid was given (the default, if it isn't one of them).
+const order = ['comfortable', 'standard', 'tight', 'tightest'];
 const cycleFrom = density => {
-    const tighter = ['tight', 'tightest'];
-    const cycle = tighter.includes(density) ? [defaultDensity, ...tighter] : [density, ...tighter];
-    const start = cycle.indexOf(density);
-    return [...cycle.slice(start), ...cycle.slice(0, start)];
+    const from = order.indexOf(order.includes(density) ? density : defaultDensity);
+    return [...order.slice(from), ...order.slice(0, from)];
 };
 
 // The density a grid shows, and the next one the toggle goes to. When it changes, the grid keeps

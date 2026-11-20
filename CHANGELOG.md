@@ -1,4 +1,7 @@
 # Changelog
+## [0.8.0] - 2026-11-20
+- The density options are renamed so the default says so: "dense" is now "standard" (still the default) and "compact" is now "comfortable" (14px text, 30px rows, looser than the default). "tight" and "tightest" are unchanged. An unknown density, an old name included, is drawn as standard.
+- The density toggle steps through all four densities (comfortable, standard, tight, tightest, and round again), starting from the grid's density, rather than only the grid's density, tight and tightest. Its tooltip names the next one: "Comfortable rows", "Standard rows", "Tight rows" or "Tightest rows".
 ## [0.7.0] - 2026-11-20
 - density defaults to "dense" (13px text, 26px rows, 28px column headings) rather than "compact". Pass density="compact" to keep the 0.6.0 look.
 - density="tight" and density="tightest", for an expert who wants as many numbers on screen as can still be read. Tight: 12px text, 22px rows, 24px column headings and 4px cell padding. Tightest: 11px text, 20px rows and 22px column headings, with faintly striped rows to follow one across; a total row's shade is stronger there, to stand out from the stripes.

@@ -63,11 +63,11 @@ function ReportAGrids({
     openLinksInNewTabs = true,
     showTotals = false,
     fixedRowHeight = false,
-    // "dense" (the default), "compact" (larger text, taller rows), "tight" (smaller) or "tightest"
+    // "standard" (the default), "comfortable" (larger text, taller rows), "tight" (smaller) or "tightest"
     // (smallest, striped)
     density = defaultDensity,
-    // a button by the search that steps through density, "tight" and "tightest", for an expert who
-    // wants more on screen; off by default
+    // a button by the search that steps through every density, starting from density, for each
+    // user to find the one that suits the report; off by default
     showDensityToggle = false,
     showRowCount = false,
     maxRowsWithoutScroll = 100,

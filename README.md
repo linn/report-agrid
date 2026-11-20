@@ -57,21 +57,22 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   have none. (A text cell's tooltip may show even when nothing is cut off: AG Grid only checks for
   cells it draws itself.)
 - Only text wraps onto more lines: number and date cells stay on one, so they never make a row taller.
-- `density` is `"dense"` (the default), `"compact"`, `"tight"` or `"tightest"`:
+- `density` is `"standard"` (the default), `"comfortable"`, `"tight"` or `"tightest"`:
 
   | density | text | row | column headings | cell padding |
   |---|---|---|---|---|
-  | `"compact"` | theme `body2` (14px) | 30px | 32px | 8px |
-  | `"dense"` (default) | 13px | 26px | 28px | 8px |
+  | `"comfortable"` | theme `body2` (14px) | 30px | 32px | 8px |
+  | `"standard"` (default) | 13px | 26px | 28px | 8px |
   | `"tight"` | 12px | 22px | 24px | 4px |
   | `"tightest"` | 11px | 20px | 22px | 4px |
 
   Rows are the `fixedRowHeight` height; a wrapped row of one line is about as tall. Tight and
   tightest are for an expert who wants as many numbers on screen as can still be read; tightest's
   rows are faintly striped, to follow one across.
-- `showDensityToggle` (off by default) gives a button by the search that steps a grid through its
-  `density`, `"tight"` and `"tightest"`, then back (a grid given tight or tightest steps through
-  those and the default). The grid keeps its search, sort, filters and scroll.
+- `showDensityToggle` (off by default) gives a button by the search that steps a grid through every
+  density, loosest to tightest and round again, starting from its `density`, so each user can find
+  the one that suits the report. Its tooltip names the next one. The grid keeps its search, sort,
+  filters and scroll.
 - Numbers use tabular figures (every digit the same width), so a column lines up digit by digit.
 - Subtotal and total rows are bold; a total row is also on a faint shade.
 - `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and

@@ -146,7 +146,8 @@ describe('CombinedReportAGrids', () => {
         renderCombined({ showDensityToggle: true });
         await userEvent.click(await screen.findByRole('button', { name: 'Tight rows' }));
         await userEvent.click(screen.getByRole('button', { name: 'Tightest rows' }));
-        expect(screen.getByRole('button', { name: 'Normal rows' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Comfortable rows' }));
+        expect(screen.getByRole('button', { name: 'Standard rows' })).toBeInTheDocument();
     });
 
     test('headings can be filtered and sorted', async () => {
