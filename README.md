@@ -57,9 +57,21 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   have none. (A text cell's tooltip may show even when nothing is cut off: AG Grid only checks for
   cells it draws itself.)
 - Only text wraps onto more lines: number and date cells stay on one, so they never make a row taller.
-- `density` is `"compact"` (the default) or `"dense"`. Compact uses the theme's `body2` text (14px)
-  with 30px rows and 32px column headings; dense has 13px text, 26px rows and 28px headings, for
-  more on screen at once. A wrapped row of one line is as tall as a fixed one.
+- `density` is `"dense"` (the default), `"compact"`, `"tight"` or `"tightest"`:
+
+  | density | text | row | column headings | cell padding |
+  |---|---|---|---|---|
+  | `"compact"` | theme `body2` (14px) | 30px | 32px | 8px |
+  | `"dense"` (default) | 13px | 26px | 28px | 8px |
+  | `"tight"` | 12px | 22px | 24px | 4px |
+  | `"tightest"` | 11px | 20px | 22px | 4px |
+
+  Rows are the `fixedRowHeight` height; a wrapped row of one line is about as tall. Tight and
+  tightest are for an expert who wants as many numbers on screen as can still be read; tightest's
+  rows are faintly striped, to follow one across.
+- `showDensityToggle` (off by default) gives a button by the search that steps a grid through its
+  `density`, `"tight"` and `"tightest"`, then back (a grid given tight or tightest steps through
+  those and the default). The grid keeps its search, sort, filters and scroll.
 - Numbers use tabular figures (every digit the same width), so a column lines up digit by digit.
 - Subtotal and total rows are bold; a total row is also on a faint shade.
 - `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and
@@ -113,7 +125,7 @@ import { CombinedReportAGrids } from '@linn-it/report-agrid';
   pinned totals rows.
 
 Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLinksInNewTabs`,
-`fixedRowHeight`, `density`, `showExport`, `showSearch`, `exportFileName`, `height`, `fillOffset`,
+`fixedRowHeight`, `density`, `showDensityToggle`, `showExport`, `showSearch`, `exportFileName`, `height`, `fillOffset`,
 `minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight`, `spacerRowHeight`, `sortable` and
 `filterable`.
 
@@ -124,7 +136,7 @@ Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLin
 - Many reports, such as one per account: `ReportAGrids` with `lazy` to keep a grid per report, or
   `CombinedReportAGrids` for one list.
 
-Extra props on `ReportAGrid` and `ReportAGrids`: `density`, `maxRowsWithoutScroll`, `height`, `fillOffset`,
+Extra props on `ReportAGrid` and `ReportAGrids`: `density`, `showDensityToggle`, `maxRowsWithoutScroll`, `height`, `fillOffset`,
 `minFillHeight`, `pageSize`,
 `pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrids`
 only: `lazy` and `lazyMargin`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by

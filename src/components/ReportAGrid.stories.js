@@ -26,7 +26,9 @@ export default {
             </MemoryRouter>
         )
     ],
-    argTypes: { density: { control: 'inline-radio', options: ['compact', 'dense'] } },
+    argTypes: {
+        density: { control: 'inline-radio', options: ['compact', 'dense', 'tight', 'tightest'] }
+    },
     args: {
         report: makeReport('Products Report', basicRows),
         renderZeroes: false,
@@ -38,7 +40,8 @@ export default {
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
-        density: 'compact',
+        density: 'dense',
+        showDensityToggle: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
         height: 'fill',
@@ -205,16 +208,26 @@ export const SideBySide = {
     }
 };
 
-export const Dense = {
-    name: 'Dense (subtotals and totals)',
+export const Tight = {
+    name: 'Tight (subtotals and totals)',
     args: {
         report: makeReport('Products Summary', rowsWithSubtotal, { qty: 34, total: 619.76 }),
         showTotals: true,
-        density: 'dense'
+        density: 'tight'
     }
 };
 
-export const LargeReportDense = {
-    name: 'Large report, dense (5,000 rows, fixed row height)',
-    args: { ...LargeReport.args, density: 'dense' }
+export const LargeReportDensityToggle = {
+    name: 'Large report with the density toggle (5,000 rows, fixed row height)',
+    args: { ...LargeReport.args, showDensityToggle: true }
+};
+
+export const LargeReportCompact = {
+    name: 'Large report, compact (the old default)',
+    args: { ...LargeReport.args, density: 'compact' }
+};
+
+export const LargeReportTightest = {
+    name: 'Large report, tightest (11px)',
+    args: { ...LargeReport.args, density: 'tightest' }
 };

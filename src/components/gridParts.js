@@ -16,6 +16,7 @@ import {
     TooltipModule,
     themeQuartz
 } from 'ag-grid-community';
+import { alpha } from '@mui/material/styles';
 
 import DrillDownCell, { attributeValue } from './DrillDownCell.js';
 
@@ -42,18 +43,53 @@ export const modules = [
     TooltipModule
 ];
 
-// a cell's left and right padding in px; the row count lines up with the text in the first column
+// a cell's left and right padding in px at the default density; the row count lines up with the
+// text in the first column
 export const cellPadding = 8;
 
 // How tightly a grid is drawn (the density prop): its text size, and in px its fixed row height
-// (fixedRowHeight), column headings' row, AG Grid's spacing unit and a wrapped cell's top and
-// bottom padding. "compact" (the default) uses the app theme's body2 text. A wrapped row of one
-// line is about as tall as a fixed row.
+// (fixedRowHeight), column headings' row, AG Grid's spacing unit, a wrapped cell's top and bottom
+// padding and a cell's left and right padding. "compact" uses the app theme's body2 text. A wrapped
+// row of one line is about as tall as a fixed row. "tight" and "tightest" are for an expert who
+// wants as many numbers on screen as can still be read; tightest's rows are striped, to follow one
+// across.
 export const densities = {
-    compact: { fontSize: null, rowHeight: 30, headerHeight: 32, spacing: 4, wrapPadding: 5 },
-    dense: { fontSize: '13px', rowHeight: 26, headerHeight: 28, spacing: 3, wrapPadding: 4 }
+    compact: {
+        fontSize: null,
+        rowHeight: 30,
+        headerHeight: 32,
+        spacing: 4,
+        wrapPadding: 5,
+        cellPadding
+    },
+    dense: {
+        fontSize: '13px',
+        rowHeight: 26,
+        headerHeight: 28,
+        spacing: 3,
+        wrapPadding: 4,
+        cellPadding
+    },
+    tight: {
+        fontSize: '12px',
+        rowHeight: 22,
+        headerHeight: 24,
+        spacing: 2,
+        wrapPadding: 2,
+        cellPadding: 4
+    },
+    tightest: {
+        fontSize: '11px',
+        rowHeight: 20,
+        headerHeight: 22,
+        spacing: 2,
+        wrapPadding: 2,
+        cellPadding: 4,
+        striped: true
+    }
 };
-export const densityOf = density => densities[density] ?? densities.compact;
+export const defaultDensity = 'dense';
+export const densityOf = density => densities[density] ?? densities[defaultDensity];
 
 const isZero = v => v === 0 || v === '0';
 
@@ -78,10 +114,12 @@ export const gridTheme = (muiTheme, fixedRowHeight, density) => {
         accentColor: muiTheme.palette.primary.main,
         borderColor: muiTheme.palette.divider,
         wrapperBorderRadius: muiTheme.shape.borderRadius,
-        // compact is tighter than ReportDataGrid's density="compact"
+        // even compact is tighter than ReportDataGrid's density="compact"
         spacing: d.spacing,
-        cellHorizontalPadding: cellPadding,
+        cellHorizontalPadding: d.cellPadding,
         rowHeight: fixedRowHeight ? d.rowHeight : undefined,
+        // a faint stripe on every other row, to follow a tight row across
+        oddRowBackgroundColor: d.striped ? alpha(muiTheme.palette.text.primary, 0.025) : undefined,
         // AG Grid keeps a short grid's rows area at least 150px tall, which left a gap above
         // the pinned totals row; one row's height still has room for "No Rows To Show".
         autoHeightMinBodyHeight: d.rowHeight
@@ -242,13 +280,19 @@ export const gridStyles = density => ({
             { opacity: 0 }
     },
     '& .totalLine': { fontWeight: 'bolder' },
-    // a total on a faint shade; a subtotal is just bold
-    '& .grandTotalLine': { bgcolor: 'action.hover' },
+    // a total on a faint shade (a stronger one on striped rows); a subtotal is just bold
+    '& .grandTotalLine': {
+        bgcolor: densityOf(density).striped ? 'action.selected' : 'action.hover'
+    },
     // every digit the same width, so a column of numbers lines up digit by digit
     '& .numberCell': { fontVariantNumeric: 'tabular-nums' },
     '& .totalColumn': { fontWeight: 'bold' },
     '& .align-right': { textAlign: 'right' },
     '& .align-center': { textAlign: 'center' },
+    // A right-aligned heading sits flush right, over its numbers, with its filter button at the
+    // left of the header rather than after the text (as AG Grid's own right-aligned columns have
+    // it), so the hidden button leaves no gap at the right.
+    '& .ag-header-cell.align-right .ag-cell-label-container': { flexDirection: 'row' },
     '& .ag-header-cell.align-right .ag-header-cell-label': {
         flexDirection: 'row-reverse'
     },

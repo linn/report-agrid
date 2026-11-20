@@ -3,7 +3,12 @@ import Typography from '@mui/material/Typography';
 
 import LazyMount from './LazyMount.js';
 import ReportAGrid from './ReportAGrid.js';
-import { defaultMinFillHeight, defaultReportFillOffset, densityOf } from './gridParts.js';
+import {
+    defaultDensity,
+    defaultMinFillHeight,
+    defaultReportFillOffset,
+    densityOf
+} from './gridParts.js';
 
 // Rough heights in px of a ReportAGrid's parts, for a lazy report's placeholder before its grid
 // has been drawn. Once some grids have been drawn, their rows' average height replaces the guess.
@@ -58,8 +63,12 @@ function ReportAGrids({
     openLinksInNewTabs = true,
     showTotals = false,
     fixedRowHeight = false,
-    // "compact" (the default) or "dense": smaller text and shorter rows, for more on screen
-    density = 'compact',
+    // "dense" (the default), "compact" (larger text, taller rows), "tight" (smaller) or "tightest"
+    // (smallest, striped)
+    density = defaultDensity,
+    // a button by the search that steps through density, "tight" and "tightest", for an expert who
+    // wants more on screen; off by default
+    showDensityToggle = false,
     showRowCount = false,
     maxRowsWithoutScroll = 100,
     height = 'fill',
@@ -121,6 +130,7 @@ function ReportAGrids({
                         showTotals={showTotals}
                         fixedRowHeight={fixedRowHeight}
                         density={density}
+                        showDensityToggle={showDensityToggle}
                         renderZeroes={renderZeroes}
                         titleVariant={titlesVariant}
                         showHeader={showHeader}
