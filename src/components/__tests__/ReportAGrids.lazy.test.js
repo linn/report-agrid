@@ -134,7 +134,7 @@ describe('ReportAGrids lazy', () => {
 describe('estimateReportHeight', () => {
     const options = {
         fixedRowHeight: true,
-        density: 'compact',
+        density: 'comfortable',
         showHeader: true,
         showTotals: false,
         maxRowsWithoutScroll: 100,
@@ -156,7 +156,7 @@ describe('estimateReportHeight', () => {
         );
     });
 
-    test('dense, the default: shorter rows and column headings', () => {
+    test('standard, the default: shorter rows and column headings', () => {
         // 40 + 28 + 10 rows of 26 + 16 + 24
         expect(
             estimateReportHeight(report('Made up', 10), { ...options, density: undefined })

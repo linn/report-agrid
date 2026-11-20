@@ -643,7 +643,7 @@ describe('ReportAGrid title and loading', () => {
 });
 
 describe('ReportAGrid density', () => {
-    test('is dense by default', async () => {
+    test('is standard by default', async () => {
         const gridRef = createRef();
         render(<ReportAGrid report={makeReport([1])} gridRef={gridRef} />);
 
@@ -658,7 +658,7 @@ describe('ReportAGrid density', () => {
         expect(screen.queryByRole('button', { name: 'Tight rows' })).not.toBeInTheDocument();
     });
 
-    test('the toggle steps through tight and tightest and back, keeping the sort', async () => {
+    test('the toggle steps through every density and round, keeping the sort', async () => {
         const gridRef = createRef();
         render(<ReportAGrid report={makeReport([1])} gridRef={gridRef} showDensityToggle />);
         await screen.findByText('Widget');
@@ -673,12 +673,15 @@ describe('ReportAGrid density', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Tightest rows' }));
         expect(headerHeight()).toBe(22);
 
-        await userEvent.click(screen.getByRole('button', { name: 'Normal rows' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Comfortable rows' }));
+        expect(headerHeight()).toBe(32);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Standard rows' }));
         expect(headerHeight()).toBe(28);
         expect(sortOf()).toBe('desc');
     });
 
-    test('given tight, the toggle goes on to tightest, then the default', async () => {
+    test('starts from the density given', async () => {
         const gridRef = createRef();
         render(
             <ReportAGrid
@@ -689,31 +692,10 @@ describe('ReportAGrid density', () => {
             />
         );
         await screen.findByText('Widget');
-        const headerHeight = () => gridRef.current.api.getGridOption('headerHeight');
-        expect(headerHeight()).toBe(24);
+        expect(gridRef.current.api.getGridOption('headerHeight')).toBe(24);
 
         await userEvent.click(screen.getByRole('button', { name: 'Tightest rows' }));
-        expect(headerHeight()).toBe(22);
-
-        await userEvent.click(screen.getByRole('button', { name: 'Normal rows' }));
-        expect(headerHeight()).toBe(28);
-    });
-
-    test('given compact, the toggle comes back to compact', async () => {
-        const gridRef = createRef();
-        render(
-            <ReportAGrid
-                report={makeReport([1])}
-                gridRef={gridRef}
-                density="compact"
-                showDensityToggle
-            />
-        );
-        await screen.findByText('Widget');
-
-        await userEvent.click(screen.getByRole('button', { name: 'Tight rows' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Tightest rows' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Normal rows' }));
-        expect(gridRef.current.api.getGridOption('headerHeight')).toBe(32);
+        expect(gridRef.current.api.getGridOption('headerHeight')).toBe(22);
+        expect(screen.getByRole('button', { name: 'Comfortable rows' })).toBeInTheDocument();
     });
 });
