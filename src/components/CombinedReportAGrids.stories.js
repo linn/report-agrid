@@ -32,6 +32,7 @@ export default {
             </MemoryRouter>
         )
     ],
+    argTypes: { density: { control: 'inline-radio', options: ['compact', 'dense'] } },
     args: {
         reportData,
         renderZeroes: false,
@@ -39,6 +40,7 @@ export default {
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
+        density: 'compact',
         height: 'fill'
     }
 };
@@ -58,3 +60,5 @@ export const ManyReportsFixedRows = {
     name: 'Many reports, fixed row height',
     args: { reportData: makeManyReports(150), fixedRowHeight: true }
 };
+
+export const Dense = { name: 'Dense', args: { density: 'dense', showTotals: true } };

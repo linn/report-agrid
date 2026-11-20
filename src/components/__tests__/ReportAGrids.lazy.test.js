@@ -145,13 +145,20 @@ describe('estimateReportHeight', () => {
     });
 
     test('a report that grows to fit: title, header, rows, scrollbar and the gap below', () => {
-        // 40 + 36 + 10 rows of 30 + 16 + 24
-        expect(estimateReportHeight(report('Made up', 10), options)).toBe(416);
+        // 40 + 32 + 10 rows of 30 + 16 + 24
+        expect(estimateReportHeight(report('Made up', 10), options)).toBe(412);
     });
 
     test('uses the rows drawn so far when it has them', () => {
         expect(estimateReportHeight(report('Made up', 10), { ...options, rowHeight: 50 })).toBe(
-            616
+            612
+        );
+    });
+
+    test('dense: shorter rows and column headings', () => {
+        // 40 + 28 + 10 rows of 26 + 16 + 24
+        expect(estimateReportHeight(report('Made up', 10), { ...options, density: 'dense' })).toBe(
+            368
         );
     });
 
@@ -170,9 +177,9 @@ describe('estimateReportHeight', () => {
     });
 
     test('paged, a report is at most a page of rows, with the pager', () => {
-        // 40 + 36 + 20 rows of 30 + 16 + 48 + 24
+        // 40 + 32 + 20 rows of 30 + 16 + 48 + 24
         expect(estimateReportHeight(report('Made up', 150), { ...options, pageSize: 20 })).toBe(
-            764
+            760
         );
     });
 });

@@ -24,6 +24,7 @@ export default {
             </MemoryRouter>
         )
     ],
+    argTypes: { density: { control: 'inline-radio', options: ['compact', 'dense'] } },
     args: {
         reportData,
         renderZeroes: false,
@@ -33,6 +34,7 @@ export default {
         openLinksInNewTabs: true,
         showTotals: false,
         fixedRowHeight: false,
+        density: 'compact',
         showRowCount: false,
         maxRowsWithoutScroll: 100,
         height: 'fill'
@@ -81,3 +83,5 @@ export const ManyReports = {
     name: 'Many reports, not lazy (150 accounts)',
     args: { reportData: manyReports }
 };
+
+export const Dense = { name: 'Dense', args: { density: 'dense' } };

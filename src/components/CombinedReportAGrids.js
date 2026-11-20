@@ -14,6 +14,7 @@ import {
     defaultMinFillHeight,
     getRowClass as totalRowClass,
     gridStyles,
+    densityOf,
     gridTheme,
     modules,
     resolveHeight
@@ -71,6 +72,8 @@ function CombinedReportAGrids({
     showTotals = false,
     openLinksInNewTabs = true,
     fixedRowHeight = false,
+    // "compact" (the default) or "dense": smaller text and shorter rows, for more on screen
+    density = 'compact',
     // Export CSV exports the whole grid, every report, with each title in the first column and a
     // blank line between reports. On by default, as on ReportAGrid.
     showExport = true,
@@ -97,7 +100,10 @@ function CombinedReportAGrids({
     const gridRef = useRef(null);
     const [searchText, setSearchText] = useState('');
 
-    const theme = useMemo(() => gridTheme(muiTheme, fixedRowHeight), [muiTheme, fixedRowHeight]);
+    const theme = useMemo(
+        () => gridTheme(muiTheme, fixedRowHeight, density),
+        [muiTheme, fixedRowHeight, density]
+    );
 
     const columnDefs = useMemo(
         () =>
@@ -258,7 +264,7 @@ function CombinedReportAGrids({
                 sx={{
                     position: 'relative',
                     height: resolveHeight(height, fillOffset, minFillHeight),
-                    ...gridStyles,
+                    ...gridStyles(density),
                     // a blank row is just a gap: no row line, and nothing to hover or click
                     '& .spacerLine': { borderBottomColor: 'transparent', pointerEvents: 'none' }
                 }}
@@ -266,14 +272,15 @@ function CombinedReportAGrids({
                 {!ready && <BusyBar sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />}
                 <AgGridReact
                     // suppressColumnVirtualisation is only read when a grid is made, so switching
-                    // between fixed and wrapped rows makes a new one
-                    key={fixedRowHeight ? 'fixed' : 'wrapped'}
+                    // between fixed and wrapped rows makes a new one; so does a new density, so
+                    // every row is measured afresh
+                    key={`${fixedRowHeight ? 'fixed' : 'wrapped'}-${density}`}
                     ref={gridRef}
                     modules={combinedModules}
                     theme={theme}
                     rowData={rowData}
                     columnDefs={columnDefs}
-                    headerHeight={36}
+                    headerHeight={densityOf(density).headerHeight}
                     context={{ openLinksInNewTabs, titlesVariant }}
                     isFullWidthRow={isFullWidthRow}
                     fullWidthCellRenderer={TitleRow}

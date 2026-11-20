@@ -3,16 +3,14 @@ import Typography from '@mui/material/Typography';
 
 import LazyMount from './LazyMount.js';
 import ReportAGrid from './ReportAGrid.js';
-import { defaultMinFillHeight, defaultReportFillOffset } from './gridParts.js';
+import { defaultMinFillHeight, defaultReportFillOffset, densityOf } from './gridParts.js';
 
 // Rough heights in px of a ReportAGrid's parts, for a lazy report's placeholder before its grid
 // has been drawn. Once some grids have been drawn, their rows' average height replaces the guess.
 const titleHeight = 40;
-const headerHeight = 36;
 const scrollbarHeight = 16;
 const gapBelow = 24;
 const pagerHeight = 48;
-const guessedRowHeight = { fixed: 30, wrapped: 33 };
 
 // A grid's `height` in px, when it scrolls rather than growing to fit its rows.
 const scrollingHeight = ({ height, fillOffset, minFillHeight }) => {
@@ -34,15 +32,15 @@ const scrollingHeight = ({ height, fillOffset, minFillHeight }) => {
 
 // How tall a report will be once drawn, for its placeholder until then.
 export const estimateReportHeight = (report, options) => {
-    const { fixedRowHeight, showHeader, showTotals, maxRowsWithoutScroll, pageSize, rowHeight } =
-        options;
+    const { density, showHeader, showTotals, maxRowsWithoutScroll, pageSize, rowHeight } = options;
+    // a wrapped row of one line is about as tall as a fixed row
+    const d = densityOf(density);
     const rows = Math.min(report.results.length, pageSize > 0 ? pageSize : Infinity);
     const body =
         rows > maxRowsWithoutScroll
             ? scrollingHeight(options)
-            : (rows + (showTotals && report.totals ? 1 : 0)) *
-                  (rowHeight ?? guessedRowHeight[fixedRowHeight ? 'fixed' : 'wrapped']) +
-              (showHeader ? headerHeight : 0) +
+            : (rows + (showTotals && report.totals ? 1 : 0)) * (rowHeight ?? d.rowHeight) +
+              (showHeader ? d.headerHeight : 0) +
               scrollbarHeight;
     return titleHeight + body + (pageSize > 0 ? pagerHeight : 0) + gapBelow;
 };
@@ -60,6 +58,8 @@ function ReportAGrids({
     openLinksInNewTabs = true,
     showTotals = false,
     fixedRowHeight = false,
+    // "compact" (the default) or "dense": smaller text and shorter rows, for more on screen
+    density = 'compact',
     showRowCount = false,
     maxRowsWithoutScroll = 100,
     height = 'fill',
@@ -86,7 +86,7 @@ function ReportAGrids({
     useEffect(() => {
         rowSample.current = { total: 0, count: 0 };
         setRowHeight(null);
-    }, [reportData, fixedRowHeight]);
+    }, [reportData, fixedRowHeight, density]);
     const onDrawn = useCallback(element => {
         const rows = element.querySelectorAll('.ag-center-cols-container .ag-row');
         if (!rows.length) {
@@ -120,6 +120,7 @@ function ReportAGrids({
                         showPrint={showPrint}
                         showTotals={showTotals}
                         fixedRowHeight={fixedRowHeight}
+                        density={density}
                         renderZeroes={renderZeroes}
                         titleVariant={titlesVariant}
                         showHeader={showHeader}
@@ -148,7 +149,7 @@ function ReportAGrids({
                         margin={lazyMargin}
                         onDrawn={onDrawn}
                         estimatedHeight={estimateReportHeight(d, {
-                            fixedRowHeight,
+                            density,
                             showHeader,
                             showTotals,
                             maxRowsWithoutScroll,

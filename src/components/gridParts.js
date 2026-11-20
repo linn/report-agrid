@@ -45,6 +45,16 @@ export const modules = [
 // a cell's left and right padding in px; the row count lines up with the text in the first column
 export const cellPadding = 8;
 
+// How tightly a grid is drawn (the density prop): its text size, and in px its fixed row height
+// (fixedRowHeight), column headings' row, AG Grid's spacing unit and a wrapped cell's top and
+// bottom padding. "compact" (the default) uses the app theme's body2 text. A wrapped row of one
+// line is about as tall as a fixed row.
+export const densities = {
+    compact: { fontSize: null, rowHeight: 30, headerHeight: 32, spacing: 4, wrapPadding: 5 },
+    dense: { fontSize: '13px', rowHeight: 26, headerHeight: 28, spacing: 3, wrapPadding: 4 }
+};
+export const densityOf = density => densities[density] ?? densities.compact;
+
 const isZero = v => v === 0 || v === '0';
 
 // height="fill": as tall as the window less fillOffset, the room left for what sits above the grid
@@ -57,24 +67,26 @@ export const resolveHeight = (height, fillOffset, minFillHeight) =>
     height === 'fill' ? `max(${minFillHeight}px, calc(100vh - ${fillOffset}px))` : height;
 
 // The grid's theme, from the app's MUI theme.
-export const gridTheme = (muiTheme, fixedRowHeight) =>
-    themeQuartz.withParams({
+export const gridTheme = (muiTheme, fixedRowHeight, density) => {
+    const d = densityOf(density);
+    return themeQuartz.withParams({
         fontFamily: muiTheme.typography.fontFamily,
-        fontSize: muiTheme.typography.body2.fontSize,
+        fontSize: d.fontSize ?? muiTheme.typography.body2.fontSize,
         headerFontWeight: muiTheme.typography.fontWeightMedium,
         foregroundColor: muiTheme.palette.text.primary,
         backgroundColor: muiTheme.palette.background.paper,
         accentColor: muiTheme.palette.primary.main,
         borderColor: muiTheme.palette.divider,
         wrapperBorderRadius: muiTheme.shape.borderRadius,
-        // compact, like ReportDataGrid's density="compact"
-        spacing: 4,
+        // compact is tighter than ReportDataGrid's density="compact"
+        spacing: d.spacing,
         cellHorizontalPadding: cellPadding,
-        rowHeight: fixedRowHeight ? 30 : undefined,
+        rowHeight: fixedRowHeight ? d.rowHeight : undefined,
         // AG Grid keeps a short grid's rows area at least 150px tall, which left a gap above
         // the pinned totals row; one row's height still has room for "No Rows To Show".
-        autoHeightMinBodyHeight: 30
+        autoHeightMinBodyHeight: d.rowHeight
     });
+};
 
 // A drill-down needs a React cell renderer (a link); every other cell is left to AG Grid to draw
 // as plain text, which is much cheaper on a long report.
@@ -107,7 +119,11 @@ export const buildColumnDefs = (report, { fixedRowHeight, pinnedColumns }) =>
             pinned: i < pinnedColumns ? 'left' : undefined,
             width: spec.columnWidth,
             headerClass: alignClass,
-            cellClass: [alignClass, report.headers.totalColumns?.includes(i) && 'totalColumn']
+            cellClass: [
+                alignClass,
+                isNumber && 'numberCell',
+                report.headers.totalColumns?.includes(i) && 'totalColumn'
+            ]
                 .filter(Boolean)
                 .join(' '),
             cellStyle: params => {
@@ -203,14 +219,20 @@ export const buildTotalsRow = (report, renderZeroes) =>
         { rowType: 'Total' }
     );
 
-// Subtotal and total rows are drawn bold (the totalLine class).
-export const getRowClass = params =>
-    params.data?.rowType === 'Subtotal' || params.data?.rowType === 'Total'
-        ? 'totalLine'
-        : undefined;
+// Subtotal and total rows are drawn bold (the totalLine class), a total also on a faint shade.
+export const getRowClass = params => {
+    switch (params.data?.rowType) {
+        case 'Subtotal':
+            return 'totalLine subtotalLine';
+        case 'Total':
+            return 'totalLine grandTotalLine';
+        default:
+            return undefined;
+    }
+};
 
-// The grid's own styles: totals in bold, alignment, wrapped text, and quieter filter icons.
-export const gridStyles = {
+// The grid's own styles: totals in bold, alignment, numbers, wrapped text, and quieter filter icons.
+export const gridStyles = density => ({
     // Filter icons only on the header you're pointing at, or one with a filter set. (AG Grid's
     // suppressMenuHide doesn't cover Community's filter button.) Devices that can't hover keep
     // them showing.
@@ -220,6 +242,10 @@ export const gridStyles = {
             { opacity: 0 }
     },
     '& .totalLine': { fontWeight: 'bolder' },
+    // a total on a faint shade; a subtotal is just bold
+    '& .grandTotalLine': { bgcolor: 'action.hover' },
+    // every digit the same width, so a column of numbers lines up digit by digit
+    '& .numberCell': { fontVariantNumeric: 'tabular-nums' },
     '& .totalColumn': { fontWeight: 'bold' },
     '& .align-right': { textAlign: 'right' },
     '& .align-center': { textAlign: 'center' },
@@ -229,6 +255,10 @@ export const gridStyles = {
     '& .ag-header-cell.align-center .ag-header-cell-label': {
         justifyContent: 'center'
     },
-    // wrapped rows read better with a little more line height
-    '& .ag-cell-wrap-text': { lineHeight: 1.5, py: '4px', wordBreak: 'break-word' }
-};
+    // each further line of a wrapped row adds 1.3 lines' height (18px at 14px text)
+    '& .ag-cell-wrap-text': {
+        lineHeight: 1.3,
+        py: `${densityOf(density).wrapPadding}px`,
+        wordBreak: 'break-word'
+    }
+});
