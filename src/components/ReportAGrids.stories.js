@@ -24,7 +24,9 @@ export default {
             </MemoryRouter>
         )
     ],
-    argTypes: { density: { control: 'inline-radio', options: ['compact', 'dense'] } },
+    argTypes: {
+        density: { control: 'inline-radio', options: ['compact', 'dense', 'tight', 'tightest'] }
+    },
     args: {
         reportData,
         renderZeroes: false,
@@ -34,7 +36,8 @@ export default {
         openLinksInNewTabs: true,
         showTotals: false,
         fixedRowHeight: false,
-        density: 'compact',
+        density: 'dense',
+        showDensityToggle: false,
         showRowCount: false,
         maxRowsWithoutScroll: 100,
         height: 'fill'
@@ -84,4 +87,7 @@ export const ManyReports = {
     args: { reportData: manyReports }
 };
 
-export const Dense = { name: 'Dense', args: { density: 'dense' } };
+export const WithDensityToggle = {
+    name: 'With the density toggle',
+    args: { showDensityToggle: true }
+};

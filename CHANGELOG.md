@@ -1,4 +1,10 @@
 # Changelog
+## [0.7.0] - 2026-11-20
+- density defaults to "dense" (13px text, 26px rows, 28px column headings) rather than "compact". Pass density="compact" to keep the 0.6.0 look.
+- density="tight" and density="tightest", for an expert who wants as many numbers on screen as can still be read. Tight: 12px text, 22px rows, 24px column headings and 4px cell padding. Tightest: 11px text, 20px rows and 22px column headings, with faintly striped rows to follow one across; a total row's shade is stronger there, to stand out from the stripes.
+- showDensityToggle (off by default) on all three grids: a button by the search that steps through the grid's density, "tight" and "tightest", then back (a grid given tight or tightest steps through those and the default). The grid keeps its search, sort, filters and scroll as it steps.
+- A right-aligned column's heading sits flush right over its numbers, with its filter button at the left of the header (as AG Grid's own right-aligned columns have it), so the hidden button no longer leaves a gap after the text.
+- A change of density no longer makes a new grid: its rows are measured again instead, so a sort or filter set on it stays.
 ## [0.6.0] - 2026-11-20
 - density on all three grids: "compact" (the default, as before) or "dense", with 13px text, 26px rows (fixedRowHeight), 28px column headings and less padding, for more on screen at once.
 - Numbers use tabular figures (every digit the same width), so a column of numbers lines up digit by digit.

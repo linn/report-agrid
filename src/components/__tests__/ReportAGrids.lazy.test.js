@@ -134,6 +134,7 @@ describe('ReportAGrids lazy', () => {
 describe('estimateReportHeight', () => {
     const options = {
         fixedRowHeight: true,
+        density: 'compact',
         showHeader: true,
         showTotals: false,
         maxRowsWithoutScroll: 100,
@@ -155,10 +156,24 @@ describe('estimateReportHeight', () => {
         );
     });
 
-    test('dense: shorter rows and column headings', () => {
+    test('dense, the default: shorter rows and column headings', () => {
         // 40 + 28 + 10 rows of 26 + 16 + 24
-        expect(estimateReportHeight(report('Made up', 10), { ...options, density: 'dense' })).toBe(
-            368
+        expect(
+            estimateReportHeight(report('Made up', 10), { ...options, density: undefined })
+        ).toBe(368);
+    });
+
+    test('tightest: shortest', () => {
+        // 40 + 22 + 10 rows of 20 + 16 + 24
+        expect(
+            estimateReportHeight(report('Made up', 10), { ...options, density: 'tightest' })
+        ).toBe(302);
+    });
+
+    test('tight: shorter still', () => {
+        // 40 + 24 + 10 rows of 22 + 16 + 24
+        expect(estimateReportHeight(report('Made up', 10), { ...options, density: 'tight' })).toBe(
+            324
         );
     });
 

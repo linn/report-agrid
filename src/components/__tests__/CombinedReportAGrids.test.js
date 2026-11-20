@@ -137,6 +137,18 @@ describe('CombinedReportAGrids', () => {
         expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
     });
 
+    test('has a density toggle only when asked', async () => {
+        const { unmount } = renderCombined();
+        await screen.findByText('J-THREE');
+        expect(screen.queryByRole('button', { name: 'Tight rows' })).not.toBeInTheDocument();
+        unmount();
+
+        renderCombined({ showDensityToggle: true });
+        await userEvent.click(await screen.findByRole('button', { name: 'Tight rows' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Tightest rows' }));
+        expect(screen.getByRole('button', { name: 'Normal rows' })).toBeInTheDocument();
+    });
+
     test('headings can be filtered and sorted', async () => {
         renderCombined();
         await screen.findByText('J-THREE');

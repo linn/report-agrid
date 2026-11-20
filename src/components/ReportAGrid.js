@@ -5,11 +5,12 @@ import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import BusyBar from './BusyBar.js';
+import useShownDensity from './useShownDensity.js';
 import {
     buildColumnDefs,
     buildRow,
     buildTotalsRow,
-    cellPadding,
+    defaultDensity,
     defaultMinFillHeight,
     defaultReportFillOffset,
     getRowClass,
@@ -23,6 +24,7 @@ import {
     DownloadIcon,
     LinkIcon,
     OpenInNewIcon,
+    DensityToggle,
     PrintIcon,
     Search,
     ToolButton
@@ -45,8 +47,12 @@ function ReportAGrid({
     showTotals = false,
     openLinksInNewTabs = true,
     fixedRowHeight = false,
-    // "compact" (the default) or "dense": smaller text and shorter rows, for more on screen
-    density = 'compact',
+    // "dense" (the default), "compact" (larger text, taller rows), "tight" (smaller) or "tightest"
+    // (smallest, striped)
+    density = defaultDensity,
+    // a button by the search that steps through density, "tight" and "tightest", for an expert who
+    // wants more on screen; off by default
+    showDensityToggle = false,
     showRowCount = false,
     // Up to this many rows showing (after search and filters), the grid grows to fit them, with no
     // scrollbar of its own: the page scrolls. More, and it is `height` tall and scrolls itself,
@@ -76,9 +82,16 @@ function ReportAGrid({
     const gridRef = outerGridRef ?? innerGridRef;
     const [quickFilterText, setQuickFilterText] = useState('');
 
+    // the density given, or the one the density toggle has stepped to
+    const {
+        shown: shownDensity,
+        next: nextDensity,
+        toNext: toNextDensity
+    } = useShownDensity(density, gridRef);
+
     const theme = useMemo(
-        () => gridTheme(muiTheme, fixedRowHeight, density),
-        [muiTheme, fixedRowHeight, density]
+        () => gridTheme(muiTheme, fixedRowHeight, shownDensity),
+        [muiTheme, fixedRowHeight, shownDensity]
     );
 
     const columnDefs = useMemo(
@@ -212,7 +225,7 @@ function ReportAGrid({
                         title
                     )}
                 </Box>
-                {(showSearch || showExport || showPrint) && (
+                {(showSearch || showExport || showPrint || showDensityToggle) && (
                     // a title too long to share its line pushes these onto the next, still at the
                     // right; not printed
                     <Box
@@ -226,6 +239,9 @@ function ReportAGrid({
                     >
                         {showSearch && (
                             <Search value={quickFilterText} onChange={setQuickFilterText} />
+                        )}
+                        {showDensityToggle && (
+                            <DensityToggle next={nextDensity} onClick={toNextDensity} />
                         )}
                         {showExport && (
                             <ToolButton
@@ -251,7 +267,7 @@ function ReportAGrid({
                         ? {}
                         : { height: resolveHeight(height, fillOffset, minFillHeight) }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
-                    ...gridStyles(density),
+                    ...gridStyles(shownDensity),
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}
@@ -259,13 +275,12 @@ function ReportAGrid({
                 {!ready && <BusyBar sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />}
                 <AgGridReact
                     // suppressColumnVirtualisation is only read when a grid is made, so switching
-                    // between fixed and wrapped rows makes a new one; so does a new density, so
-                    // every row is measured afresh
-                    key={`${fixedRowHeight ? 'fixed' : 'wrapped'}-${density}`}
+                    // between fixed and wrapped rows makes a new one
+                    key={fixedRowHeight ? 'fixed' : 'wrapped'}
                     ref={gridRef}
                     modules={modules}
                     alignedGrids={alignedGrids}
-                    headerHeight={showHeader ? densityOf(density).headerHeight : 0}
+                    headerHeight={showHeader ? densityOf(shownDensity).headerHeight : 0}
                     theme={theme}
                     rowData={rowData}
                     columnDefs={columnDefs}
@@ -296,7 +311,7 @@ function ReportAGrid({
             {showRowCount && report?.results && (
                 <Typography
                     variant="body2" // the grid's 1px border, then a cell's padding
-                    sx={{ mt: 0.5, pl: `${cellPadding + 1}px` }}
+                    sx={{ mt: 0.5, pl: `${densityOf(shownDensity).cellPadding + 1}px` }}
                 >
                     Number of rows:{' '}
                     {rowsShowing !== null && rowsShowing !== report.results.length

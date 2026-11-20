@@ -6,11 +6,13 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
 import BusyBar from './BusyBar.js';
-import { DownloadIcon, Search, ToolButton } from './GridTools.js';
+import { DensityToggle, DownloadIcon, Search, ToolButton } from './GridTools.js';
+import useShownDensity from './useShownDensity.js';
 import {
     buildColumnDefs,
     buildRow,
     buildTotalsRow,
+    defaultDensity,
     defaultMinFillHeight,
     getRowClass as totalRowClass,
     gridStyles,
@@ -72,8 +74,12 @@ function CombinedReportAGrids({
     showTotals = false,
     openLinksInNewTabs = true,
     fixedRowHeight = false,
-    // "compact" (the default) or "dense": smaller text and shorter rows, for more on screen
-    density = 'compact',
+    // "dense" (the default), "compact" (larger text, taller rows), "tight" (smaller) or "tightest"
+    // (smallest, striped)
+    density = defaultDensity,
+    // a button by the search that steps through density, "tight" and "tightest", for an expert who
+    // wants more on screen; off by default
+    showDensityToggle = false,
     // Export CSV exports the whole grid, every report, with each title in the first column and a
     // blank line between reports. On by default, as on ReportAGrid.
     showExport = true,
@@ -100,9 +106,16 @@ function CombinedReportAGrids({
     const gridRef = useRef(null);
     const [searchText, setSearchText] = useState('');
 
+    // the density given, or the one the density toggle has stepped to
+    const {
+        shown: shownDensity,
+        next: nextDensity,
+        toNext: toNextDensity
+    } = useShownDensity(density, gridRef);
+
     const theme = useMemo(
-        () => gridTheme(muiTheme, fixedRowHeight, density),
-        [muiTheme, fixedRowHeight, density]
+        () => gridTheme(muiTheme, fixedRowHeight, shownDensity),
+        [muiTheme, fixedRowHeight, shownDensity]
     );
 
     const columnDefs = useMemo(
@@ -256,6 +269,7 @@ function CombinedReportAGrids({
                     {currentTitle}
                 </Typography>
                 {showSearch && <Search value={searchText} onChange={setSearchText} />}
+                {showDensityToggle && <DensityToggle next={nextDensity} onClick={toNextDensity} />}
                 {showExport && (
                     <ToolButton label="Export CSV" Icon={DownloadIcon} onClick={exportCsv} />
                 )}
@@ -264,7 +278,7 @@ function CombinedReportAGrids({
                 sx={{
                     position: 'relative',
                     height: resolveHeight(height, fillOffset, minFillHeight),
-                    ...gridStyles(density),
+                    ...gridStyles(shownDensity),
                     // a blank row is just a gap: no row line, and nothing to hover or click
                     '& .spacerLine': { borderBottomColor: 'transparent', pointerEvents: 'none' }
                 }}
@@ -272,15 +286,14 @@ function CombinedReportAGrids({
                 {!ready && <BusyBar sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />}
                 <AgGridReact
                     // suppressColumnVirtualisation is only read when a grid is made, so switching
-                    // between fixed and wrapped rows makes a new one; so does a new density, so
-                    // every row is measured afresh
-                    key={`${fixedRowHeight ? 'fixed' : 'wrapped'}-${density}`}
+                    // between fixed and wrapped rows makes a new one
+                    key={fixedRowHeight ? 'fixed' : 'wrapped'}
                     ref={gridRef}
                     modules={combinedModules}
                     theme={theme}
                     rowData={rowData}
                     columnDefs={columnDefs}
-                    headerHeight={densityOf(density).headerHeight}
+                    headerHeight={densityOf(shownDensity).headerHeight}
                     context={{ openLinksInNewTabs, titlesVariant }}
                     isFullWidthRow={isFullWidthRow}
                     fullWidthCellRenderer={TitleRow}
