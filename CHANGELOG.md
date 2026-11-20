@@ -1,4 +1,9 @@
 # Changelog
+## [0.6.0] - 2026-11-20
+- density on all three grids: "compact" (the default, as before) or "dense", with 13px text, 26px rows (fixedRowHeight), 28px column headings and less padding, for more on screen at once.
+- Numbers use tabular figures (every digit the same width), so a column of numbers lines up digit by digit.
+- Total rows stand apart more from subtotals: both are still bold, and a total row (the pinned totals, or a report's totals in CombinedReportAGrids) is now on a faint shade.
+- Tighter: column headings are 32px tall rather than 36px, and wrapped text has a line height of 1.3 rather than 1.5, so each further line of a wrapped row adds 18px rather than 21px. A wrapped row of one line is about as tall as before.
 ## [0.5.0] - 2026-11-19
 - sortable and filterable on CombinedReportAGrids (both on by default): off, the column headings don't sort or filter. Sorting and filtering act on every row, titles included, so a row that doesn't say which report it's from (an opening balance, say) can end up away from its title and unidentifiable; these let a report rule that out. The search still keeps each title with its matching rows.
 - Fewer cell tooltips: only text cells with fixedRowHeight have one, to read a long description that's cut off. Since 0.2.0 every number and date cell, and every cell with fixedRowHeight, had one, and they showed on every cell rather than only when the text was cut off (AG Grid only checks that for cells it draws itself). Column header tooltips are unchanged.

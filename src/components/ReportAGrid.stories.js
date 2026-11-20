@@ -26,6 +26,7 @@ export default {
             </MemoryRouter>
         )
     ],
+    argTypes: { density: { control: 'inline-radio', options: ['compact', 'dense'] } },
     args: {
         report: makeReport('Products Report', basicRows),
         renderZeroes: false,
@@ -37,6 +38,7 @@ export default {
         showTotals: false,
         openLinksInNewTabs: true,
         fixedRowHeight: false,
+        density: 'compact',
         showRowCount: false,
         maxRowsWithoutScroll: 100,
         height: 'fill',
@@ -201,4 +203,18 @@ export const SideBySide = {
         showExport: true,
         showRowCount: true
     }
+};
+
+export const Dense = {
+    name: 'Dense (subtotals and totals)',
+    args: {
+        report: makeReport('Products Summary', rowsWithSubtotal, { qty: 34, total: 619.76 }),
+        showTotals: true,
+        density: 'dense'
+    }
+};
+
+export const LargeReportDense = {
+    name: 'Large report, dense (5,000 rows, fixed row height)',
+    args: { ...LargeReport.args, density: 'dense' }
 };

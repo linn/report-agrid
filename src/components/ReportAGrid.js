@@ -14,6 +14,7 @@ import {
     defaultReportFillOffset,
     getRowClass,
     gridStyles,
+    densityOf,
     gridTheme,
     modules,
     resolveHeight
@@ -44,6 +45,8 @@ function ReportAGrid({
     showTotals = false,
     openLinksInNewTabs = true,
     fixedRowHeight = false,
+    // "compact" (the default) or "dense": smaller text and shorter rows, for more on screen
+    density = 'compact',
     showRowCount = false,
     // Up to this many rows showing (after search and filters), the grid grows to fit them, with no
     // scrollbar of its own: the page scrolls. More, and it is `height` tall and scrolls itself,
@@ -73,7 +76,10 @@ function ReportAGrid({
     const gridRef = outerGridRef ?? innerGridRef;
     const [quickFilterText, setQuickFilterText] = useState('');
 
-    const theme = useMemo(() => gridTheme(muiTheme, fixedRowHeight), [muiTheme, fixedRowHeight]);
+    const theme = useMemo(
+        () => gridTheme(muiTheme, fixedRowHeight, density),
+        [muiTheme, fixedRowHeight, density]
+    );
 
     const columnDefs = useMemo(
         () => buildColumnDefs(report, { fixedRowHeight, pinnedColumns }),
@@ -245,7 +251,7 @@ function ReportAGrid({
                         ? {}
                         : { height: resolveHeight(height, fillOffset, minFillHeight) }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
-                    ...gridStyles,
+                    ...gridStyles(density),
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}
@@ -253,12 +259,13 @@ function ReportAGrid({
                 {!ready && <BusyBar sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />}
                 <AgGridReact
                     // suppressColumnVirtualisation is only read when a grid is made, so switching
-                    // between fixed and wrapped rows makes a new one
-                    key={fixedRowHeight ? 'fixed' : 'wrapped'}
+                    // between fixed and wrapped rows makes a new one; so does a new density, so
+                    // every row is measured afresh
+                    key={`${fixedRowHeight ? 'fixed' : 'wrapped'}-${density}`}
                     ref={gridRef}
                     modules={modules}
                     alignedGrids={alignedGrids}
-                    headerHeight={showHeader ? 36 : 0}
+                    headerHeight={showHeader ? densityOf(density).headerHeight : 0}
                     theme={theme}
                     rowData={rowData}
                     columnDefs={columnDefs}

@@ -75,8 +75,16 @@ describe('ReportAGrid cells', () => {
         const results = [row('a', 'Normal', 'A', 1), row('s', 'Subtotal', 'Sub', 1)];
         render(<ReportAGrid report={makeReport([], results)} />);
 
-        expect(rowOf(await screen.findByText('Sub'))).toHaveClass('totalLine');
+        expect(rowOf(await screen.findByText('Sub'))).toHaveClass('totalLine', 'subtotalLine');
+        expect(rowOf(screen.getByText('Sub'))).not.toHaveClass('grandTotalLine');
         expect(rowOf(screen.getByText('A'))).not.toHaveClass('totalLine');
+    });
+
+    test('number cells, and only those, have tabular figures', async () => {
+        render(<ReportAGrid report={makeReport([1])} />);
+
+        expect(cellOf(await screen.findByText('12.50'))).toHaveClass('numberCell');
+        expect(cellOf(screen.getByText('Widget'))).not.toHaveClass('numberCell');
     });
 });
 
@@ -86,7 +94,7 @@ describe('ReportAGrid totals', () => {
 
         await waitFor(() => expect(screen.getAllByText('12.50')).toHaveLength(2));
         const totalsRow = rowOf(screen.getAllByText('12.50')[1]);
-        expect(totalsRow).toHaveClass('totalLine');
+        expect(totalsRow).toHaveClass('totalLine', 'grandTotalLine');
         expect(totalsRow.closest('.ag-grid-pinned-bottom-rows-container')).not.toBeNull();
     });
 
