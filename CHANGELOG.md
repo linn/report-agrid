@@ -1,4 +1,7 @@
 # Changelog
+## [0.8.1] - 2026-11-23
+- "standard" density has a little more room around its text: 28px rows (was 26px), 30px column headings (was 28px), and 5px above and below a wrapped cell's text (was 4px). Text is still 13px.
+- When rows wrap (fixedRowHeight off), numbers and dates now sit centred in the row, in line with the text beside them; they sat about 2px high, on AG Grid's own line height.
 ## [0.8.0] - 2026-11-20
 - The density options are renamed so the default says so: "dense" is now "standard" (still the default) and "compact" is now "comfortable" (14px text, 30px rows, looser than the default). "tight" and "tightest" are unchanged. An unknown density, an old name included, is drawn as standard.
 - The density toggle steps through all four densities (comfortable, standard, tight, tightest, and round again), starting from the grid's density, rather than only the grid's density, tight and tightest. Its tooltip names the next one: "Comfortable rows", "Standard rows", "Tight rows" or "Tightest rows".

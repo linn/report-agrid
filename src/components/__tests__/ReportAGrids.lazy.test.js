@@ -157,10 +157,10 @@ describe('estimateReportHeight', () => {
     });
 
     test('standard, the default: shorter rows and column headings', () => {
-        // 40 + 28 + 10 rows of 26 + 16 + 24
+        // 40 + 30 + 10 rows of 28 + 16 + 24
         expect(
             estimateReportHeight(report('Made up', 10), { ...options, density: undefined })
-        ).toBe(368);
+        ).toBe(390);
     });
 
     test('tightest: shortest', () => {

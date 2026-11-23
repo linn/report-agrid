@@ -64,10 +64,10 @@ export const densities = {
     },
     standard: {
         fontSize: '13px',
-        rowHeight: 26,
-        headerHeight: 28,
+        rowHeight: 28,
+        headerHeight: 30,
         spacing: 3,
-        wrapPadding: 4,
+        wrapPadding: 5,
         cellPadding
     },
     tight: {
@@ -270,7 +270,7 @@ export const getRowClass = params => {
 };
 
 // The grid's own styles: totals in bold, alignment, numbers, wrapped text, and quieter filter icons.
-export const gridStyles = density => ({
+export const gridStyles = (density, fixedRowHeight) => ({
     // Filter icons only on the header you're pointing at, or one with a filter set. (AG Grid's
     // suppressMenuHide doesn't cover Community's filter button.) Devices that can't hover keep
     // them showing.
@@ -304,5 +304,16 @@ export const gridStyles = density => ({
         lineHeight: 1.3,
         py: `${densityOf(density).wrapPadding}px`,
         wordBreak: 'break-word'
-    }
+    },
+    // When rows wrap, a number or date (which doesn't) is set out like a wrapped cell's first line:
+    // AG Grid's own line height is for its default row, not ours, and left the number high in the
+    // row and out of line with the text beside it.
+    ...(fixedRowHeight
+        ? {}
+        : {
+              '& .ag-cell:not(.ag-cell-wrap-text)': {
+                  lineHeight: 1.3,
+                  py: `${densityOf(density).wrapPadding}px`
+              }
+          })
 });

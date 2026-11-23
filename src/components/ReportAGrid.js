@@ -271,7 +271,7 @@ function ReportAGrid({
                         ? {}
                         : { height: resolveHeight(height, fillOffset, minFillHeight) }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
-                    ...gridStyles(shownDensity),
+                    ...gridStyles(shownDensity, fixedRowHeight),
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}
