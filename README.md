@@ -62,7 +62,7 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   | density | text | row | column headings | cell padding |
   |---|---|---|---|---|
   | `"comfortable"` | theme `body2` (14px) | 30px | 32px | 8px |
-  | `"standard"` (default) | 13px | 26px | 28px | 8px |
+  | `"standard"` (default) | 13px | 28px | 30px | 8px |
   | `"tight"` | 12px | 22px | 24px | 4px |
   | `"tightest"` | 11px | 20px | 22px | 4px |
 

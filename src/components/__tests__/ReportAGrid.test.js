@@ -648,7 +648,7 @@ describe('ReportAGrid density', () => {
         render(<ReportAGrid report={makeReport([1])} gridRef={gridRef} />);
 
         await screen.findByText('Widget');
-        expect(gridRef.current.api.getGridOption('headerHeight')).toBe(28);
+        expect(gridRef.current.api.getGridOption('headerHeight')).toBe(30);
     });
 
     test('has no density toggle unless asked', async () => {
@@ -677,7 +677,7 @@ describe('ReportAGrid density', () => {
         expect(headerHeight()).toBe(32);
 
         await userEvent.click(screen.getByRole('button', { name: 'Standard rows' }));
-        expect(headerHeight()).toBe(28);
+        expect(headerHeight()).toBe(30);
         expect(sortOf()).toBe('desc');
     });
 

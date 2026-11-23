@@ -284,7 +284,7 @@ function CombinedReportAGrids({
                 sx={{
                     position: 'relative',
                     height: resolveHeight(height, fillOffset, minFillHeight),
-                    ...gridStyles(shownDensity),
+                    ...gridStyles(shownDensity, fixedRowHeight),
                     // a blank row is just a gap: no row line, and nothing to hover or click
                     '& .spacerLine': { borderBottomColor: 'transparent', pointerEvents: 'none' }
                 }}
