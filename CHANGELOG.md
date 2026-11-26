@@ -1,4 +1,6 @@
 # Changelog
+## [0.9.1] - 2026-11-26
+- No totals row while no rows are showing, so "No Rows To Show" no longer sits on the line above it.
 ## [0.9.0] - 2026-11-26
 - The totals row lines up with its columns in an app that uses MUI's CssBaseline. CssBaseline's `* { box-sizing: inherit }` beat AG Grid's own rule for the pinned totals row's cells, so each was its padding and border (16px) wider than the column above it, and every total sat about 16px to the right. Apps that put the cells back to border-box themselves can drop that.
 - Drill-down links are in the cell's text colour, not link blue, with a thin, faint underline set a little below the text, so a report full of links reads as its numbers. Pointing at a link darkens its underline and turns it the theme's primary colour; a keyboard focus ring shows on Tab. A cell attribute's text colour still wins.

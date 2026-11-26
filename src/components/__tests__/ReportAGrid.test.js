@@ -104,6 +104,27 @@ describe('ReportAGrid totals', () => {
 
         expect(await screen.findAllByText('12.50')).toHaveLength(1);
     });
+
+    test('no totals row when the report has no rows, so "No Rows To Show" sits in the body', async () => {
+        const { rerender } = render(<ReportAGrid report={makeReport([1])} showTotals />);
+        await waitFor(() => expect(screen.getAllByText('12.50')).toHaveLength(2));
+
+        rerender(<ReportAGrid report={makeReport([1], [])} showTotals />);
+
+        await screen.findByText('No Rows To Show');
+        await waitFor(() => expect(screen.queryByText('12.50')).not.toBeInTheDocument());
+    });
+
+    test('no totals row while a search matches nothing, and back when it is cleared', async () => {
+        render(<ReportAGrid report={makeReport([1])} showTotals />);
+        await waitFor(() => expect(screen.getAllByText('12.50')).toHaveLength(2));
+
+        await searchFor('nothing matches');
+        await waitFor(() => expect(screen.queryByText('12.50')).not.toBeInTheDocument());
+
+        await userEvent.clear(screen.getByRole('textbox', { name: 'Search' }));
+        await waitFor(() => expect(screen.getAllByText('12.50')).toHaveLength(2));
+    });
 });
 
 const makeDateReport = () => ({

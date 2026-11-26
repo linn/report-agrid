@@ -107,12 +107,6 @@ function ReportAGrid({
         [report, renderZeroes]
     );
 
-    // The totals row is pinned to the bottom, so it stays in view and isn't moved by sorting.
-    const pinnedBottomRowData = useMemo(
-        () => (showTotals && report.totals ? [buildTotalsRow(report, renderZeroes)] : undefined),
-        [report, showTotals, renderZeroes]
-    );
-
     const exportCsv = () =>
         gridRef.current?.api.exportDataAsCsv({
             fileName: `${report.title?.displayString || 'report'}.csv`
@@ -141,6 +135,19 @@ function ReportAGrid({
         ? Math.min(rowsShowing ?? rowData.length, currentPageSize ?? pageSize)
         : (rowsShowing ?? rowData.length);
     const autoHeight = rowsInView <= maxRowsWithoutScroll;
+
+    // The totals row is pinned to the bottom, so it stays in view and isn't moved by sorting.
+    // With no rows showing (an empty report, or a search that matches nothing) there is nothing to
+    // total, and AG Grid would centre "No Rows To Show" over the body and the totals row together,
+    // on the line between them.
+    const noRowsShowing = rowsInView === 0;
+    const pinnedBottomRowData = useMemo(
+        () =>
+            showTotals && report.totals && !noRowsShowing
+                ? [buildTotalsRow(report, renderZeroes)]
+                : undefined,
+        [report, showTotals, renderZeroes, noRowsShowing]
+    );
 
     // Print draws every row (AG Grid's print layout, unpaged), opens the browser's print dialog,
     // then puts the grid back.
