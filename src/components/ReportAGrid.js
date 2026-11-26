@@ -46,6 +46,9 @@ function ReportAGrid({
     showPrint = false,
     showTotals = false,
     openLinksInNewTabs = true,
+    // drill-down links' colour: 'text' (the default, the cell's text colour), 'primary' (the
+    // theme's link blue), or a theme palette path or CSS colour
+    linkColor = 'text',
     fixedRowHeight = false,
     // "standard" (the default), "comfortable" (larger text, taller rows), "tight" (smaller) or "tightest"
     // (smallest, striped)
@@ -271,7 +274,7 @@ function ReportAGrid({
                         ? {}
                         : { height: resolveHeight(height, fillOffset, minFillHeight) }),
                     '& .ag-root-wrapper': { visibility: ready ? 'visible' : 'hidden' },
-                    ...gridStyles(shownDensity, fixedRowHeight),
+                    ...gridStyles(shownDensity, fixedRowHeight, linkColor),
                     // no header at all, not even its border
                     ...(showHeader ? {} : { '& .ag-header': { display: 'none' } })
                 }}

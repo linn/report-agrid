@@ -61,6 +61,8 @@ function ReportAGrids({
     showSearch = perReportExport,
     showPrint = false,
     openLinksInNewTabs = true,
+    // drill-down links' colour: 'text' (the default), 'primary', or a palette path or CSS colour
+    linkColor = 'text',
     showTotals = false,
     fixedRowHeight = false,
     // "standard" (the default), "comfortable" (larger text, taller rows), "tight" (smaller) or "tightest"
@@ -135,6 +137,7 @@ function ReportAGrids({
                         titleVariant={titlesVariant}
                         showHeader={showHeader}
                         openLinksInNewTabs={openLinksInNewTabs}
+                        linkColor={linkColor}
                         showRowCount={showRowCount}
                         maxRowsWithoutScroll={maxRowsWithoutScroll}
                         height={height}

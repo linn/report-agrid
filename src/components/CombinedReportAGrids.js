@@ -73,6 +73,8 @@ function CombinedReportAGrids({
     titlesVariant = 'h6',
     showTotals = false,
     openLinksInNewTabs = true,
+    // drill-down links' colour: 'text' (the default), 'primary', or a palette path or CSS colour
+    linkColor = 'text',
     fixedRowHeight = false,
     // "standard" (the default), "comfortable" (larger text, taller rows), "tight" (smaller) or "tightest"
     // (smallest, striped)
@@ -284,7 +286,7 @@ function CombinedReportAGrids({
                 sx={{
                     position: 'relative',
                     height: resolveHeight(height, fillOffset, minFillHeight),
-                    ...gridStyles(shownDensity, fixedRowHeight),
+                    ...gridStyles(shownDensity, fixedRowHeight, linkColor),
                     // a blank row is just a gap: no row line, and nothing to hover or click
                     '& .spacerLine': { borderBottomColor: 'transparent', pointerEvents: 'none' }
                 }}

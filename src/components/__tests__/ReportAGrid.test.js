@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ReportAGrid from '../ReportAGrid';
 import ReportAGrids from '../ReportAGrids';
-import { resolveHeight } from '../gridParts';
+import { gridStyles, linkColorOf, resolveHeight } from '../gridParts';
 
 const cellOf = el => el.closest('[role="gridcell"]');
 const rowOf = el => el.closest('[role="row"]');
@@ -697,5 +697,40 @@ describe('ReportAGrid density', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Tightest rows' }));
         expect(gridRef.current.api.getGridOption('headerHeight')).toBe(22);
         expect(screen.getByRole('button', { name: 'Comfortable rows' })).toBeInTheDocument();
+    });
+});
+
+describe('ReportAGrid under an app-wide box-sizing: inherit', () => {
+    // MUI's CssBaseline sets `* { box-sizing: inherit }`, which beats AG Grid's zero-specificity
+    // border-box rule for the cells of its content-box pinned-rows container: the totals cells then
+    // grow by their padding and border and sit to the right of their columns.
+    test('puts the pinned rows cells back to border-box', () => {
+        expect(gridStyles('standard', true)).toMatchObject({
+            '& .ag-grid-pinned-bottom-rows *, & .ag-grid-pinned-top-rows *': {
+                boxSizing: 'border-box'
+            }
+        });
+    });
+});
+
+describe('ReportAGrid drill-down link colour', () => {
+    test('links are in the text colour by default', () => {
+        expect(gridStyles('standard', true)['& .ag-cell a']).toMatchObject({
+            color: 'inherit',
+            textDecorationLine: 'underline'
+        });
+    });
+
+    test("linkColor 'primary' is the theme's link blue", () => {
+        expect(gridStyles('standard', true, 'primary')['& .ag-cell a'].color).toBe('primary.main');
+    });
+
+    test('a palette path or CSS colour is used as given', () => {
+        expect(linkColorOf('secondary.dark')).toBe('secondary.dark');
+        expect(linkColorOf('#333')).toBe('#333');
+    });
+
+    test('pointing at a link turns it the primary colour', () => {
+        expect(gridStyles('standard', true)['& .ag-cell a:hover'].color).toBe('primary.main');
     });
 });
