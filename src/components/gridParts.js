@@ -269,8 +269,15 @@ export const getRowClass = params => {
     }
 };
 
-// The grid's own styles: totals in bold, alignment, numbers, wrapped text, and quieter filter icons.
-export const gridStyles = (density, fixedRowHeight) => ({
+// A drill-down link's colour: 'text' (the default) is the cell's own text colour, 'primary' the
+// theme's primary (link blue), and anything else a theme palette path ('secondary.dark') or a CSS
+// colour, as MUI's sx takes them.
+export const linkColorOf = linkColor =>
+    ({ text: 'inherit', primary: 'primary.main' })[linkColor] ?? linkColor ?? 'inherit';
+
+// The grid's own styles: totals in bold, alignment, numbers, wrapped text, drill-down links and
+// quieter filter icons.
+export const gridStyles = (density, fixedRowHeight, linkColor = 'text') => ({
     // Filter icons only on the header you're pointing at, or one with a filter set. (AG Grid's
     // suppressMenuHide doesn't cover Community's filter button.) Devices that can't hover keep
     // them showing.
@@ -278,6 +285,37 @@ export const gridStyles = (density, fixedRowHeight) => ({
         '& .ag-header-cell-filter-button': { transition: 'opacity .2s' },
         '& .ag-header-cell:not(.ag-header-cell-filtered):not(:hover):not(:focus-within) .ag-header-cell-filter-button':
             { opacity: 0 }
+    },
+    // AG Grid draws its pinned (totals) rows' container content-box and its cells border-box, but
+    // the cells' border-box is a zero-specificity :where() rule. An app's
+    // `* { box-sizing: inherit }` (MUI's CssBaseline) beats it, so the cells take content-box from
+    // the container and grow by their padding and border, leaving each total to the right of its
+    // column. Put them back to border-box.
+    '& .ag-grid-pinned-bottom-rows *, & .ag-grid-pinned-top-rows *': {
+        boxSizing: 'border-box'
+    },
+    // Drill-down links read as the report's numbers, not as a page of blue: in the text colour (or
+    // linkColor), with a thin, faint underline set a little below the text, so a column of links
+    // still lines up and reads easily. Pointing at one darkens its underline and turns it the
+    // theme's primary colour, so it's clear what will open. A cell attribute's text colour still
+    // wins (DrillDownCell sets it on the link).
+    '& .ag-cell a': {
+        color: linkColorOf(linkColor),
+        textDecorationLine: 'underline',
+        textDecorationThickness: '1px',
+        textUnderlineOffset: '0.2em',
+        textDecorationColor: 'color-mix(in srgb, currentColor 40%, transparent)',
+        transition: 'color .15s, text-decoration-color .15s'
+    },
+    '& .ag-cell a:hover': {
+        color: 'primary.main',
+        textDecorationColor: 'currentColor'
+    },
+    '& .ag-cell a:focus-visible': {
+        outline: '2px solid',
+        outlineColor: 'primary.main',
+        outlineOffset: '1px',
+        borderRadius: '2px'
     },
     '& .totalLine': { fontWeight: 'bolder' },
     // a total on a faint shade (a stronger one on striped rows); a subtotal is just bold

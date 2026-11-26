@@ -1,4 +1,9 @@
 # Changelog
+## [0.9.0] - 2026-11-26
+- The totals row lines up with its columns in an app that uses MUI's CssBaseline. CssBaseline's `* { box-sizing: inherit }` beat AG Grid's own rule for the pinned totals row's cells, so each was its padding and border (16px) wider than the column above it, and every total sat about 16px to the right. Apps that put the cells back to border-box themselves can drop that.
+- Drill-down links are in the cell's text colour, not link blue, with a thin, faint underline set a little below the text, so a report full of links reads as its numbers. Pointing at a link darkens its underline and turns it the theme's primary colour; a keyboard focus ring shows on Tab. A cell attribute's text colour still wins.
+- linkColor on all three grids: "text" (the default), "primary" for the theme's link blue (as before, with the new underline), or a theme palette path ("secondary.dark") or CSS colour.
+- New stories: a totals row under CssBaseline, and drill-down links in link blue.
 ## [0.8.1] - 2026-11-23
 - "standard" density has a little more room around its text: 28px rows (was 26px), 30px column headings (was 28px), and 5px above and below a wrapped cell's text (was 4px). Text is still 13px.
 - When rows wrap (fixedRowHeight off), numbers and dates now sit centred in the row, in line with the text beside them; they sat about 2px high, on AG Grid's own line height.

@@ -73,6 +73,10 @@ link within the app needs the grid to be inside a router, as with `ReportDataGri
   density, loosest to tightest and round again, starting from its `density`, so each user can find
   the one that suits the report. Its tooltip names the next one. The grid keeps its search, sort,
   filters and scroll.
+- Drill-down links are in the cell's text colour, not link blue, with a thin, faint underline, so a
+  report full of them still reads as its numbers. Pointing at one darkens its underline and turns
+  it the theme's primary colour. `linkColor="primary"` makes them link blue; any theme palette
+  path (`"secondary.dark"`) or CSS colour works too. A cell's own text colour (its attributes) wins.
 - Numbers use tabular figures (every digit the same width), so a column lines up digit by digit.
 - Subtotal and total rows are bold; a total row is also on a faint shade.
 - `rowBuffer` (default 10, AG Grid's own) is how many rows are drawn beyond those in view, above and
@@ -125,7 +129,7 @@ import { CombinedReportAGrids } from '@linn-it/report-agrid';
 - Not here, as they're one report's: per-report search, export and print, paging, the row count and
   pinned totals rows.
 
-Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLinksInNewTabs`,
+Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLinksInNewTabs`, `linkColor`,
 `fixedRowHeight`, `density`, `showDensityToggle`, `showExport`, `showSearch`, `exportFileName`, `height`, `fillOffset`,
 `minFillHeight`, `rowBuffer`, `pinnedColumns`, `titleRowHeight`, `spacerRowHeight`, `sortable` and
 `filterable`.
@@ -137,7 +141,7 @@ Its props: `reportData`, `renderZeroes`, `titlesVariant`, `showTotals`, `openLin
 - Many reports, such as one per account: `ReportAGrids` with `lazy` to keep a grid per report, or
   `CombinedReportAGrids` for one list.
 
-Extra props on `ReportAGrid` and `ReportAGrids`: `density`, `showDensityToggle`, `maxRowsWithoutScroll`, `height`, `fillOffset`,
+Extra props on `ReportAGrid` and `ReportAGrids`: `linkColor`, `density`, `showDensityToggle`, `maxRowsWithoutScroll`, `height`, `fillOffset`,
 `minFillHeight`, `pageSize`,
 `pageSizeOptions`, `pinnedColumns`, `rowBuffer`, `showSearch` and `showPrint`. On `ReportAGrids`
 only: `lazy` and `lazyMargin`. On `ReportAGrid` only: `gridRef` and `alignedGrids` (AG Grid's own, used by

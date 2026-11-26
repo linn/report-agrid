@@ -1,5 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
+import CssBaseline from '@mui/material/CssBaseline';
 import { ReportDataGrid } from '@linn-it/linn-form-components-library';
 import ReportAGrid from './ReportAGrid';
 import {
@@ -68,6 +69,19 @@ export const WithTotals = {
     }
 };
 
+export const WithTotalsUnderCssBaseline = {
+    name: "With totals row, under MUI's CssBaseline (totals stay under their columns)",
+    args: WithTotals.args,
+    decorators: [
+        Story => (
+            <>
+                <CssBaseline />
+                <Story />
+            </>
+        )
+    ]
+};
+
 export const WithSubtotalRows = {
     name: 'With subtotal row types',
     args: { report: makeReport('Products Summary', rowsWithSubtotal) }
@@ -108,6 +122,11 @@ export const WithLinkedTitle = {
 export const WithDrillDowns = {
     name: 'With drill-down links',
     args: { report: reportWithDrillDowns }
+};
+
+export const WithDrillDownsInLinkBlue = {
+    name: "With drill-down links in link blue (linkColor 'primary')",
+    args: { report: reportWithDrillDowns, linkColor: 'primary' }
 };
 
 export const WithColourAttributes = {
